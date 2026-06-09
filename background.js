@@ -7,13 +7,14 @@ const API_CONFIG = {
   aesKey: "fd14f9f8e38808fa"
 };
 
-const STORAGE_SCHEMA_VERSION = "2026-06-09-auto-cache-v1";
+const STORAGE_SCHEMA_VERSION = "2026-06-09-custom-domain-v1";
 const LEGACY_REMOTE_BASE_URLS = [
-  "https://txzz.lsy20.top"
+  "https://txzz.lsy20.top",
+  "https://txzz-secure-pool.3199912548.workers.dev"
 ];
 
 const REMOTE_CONFIG = {
-  baseUrl: "https://txzz-secure-pool.3199912548.workers.dev",
+  baseUrl: "https://txzzsecure.lsy20.top",
   clientToken: "txzz_client_91ee115d9bf5c8e800f2def383f9da71d449fb2a11ccba455c9abb7c590701f2",
   adminToken: "",
   enabled: true,
@@ -251,6 +252,14 @@ function isRemoteAccount(account = {}) {
   return source === "remote" || source === "qrcode" || source === "remote-seed";
 }
 
+function isCloudAccount(account = {}) {
+  return isRemoteAccount(account) || String(account.source || "") === "seed";
+}
+
+function isHealthyAccount(account = {}) {
+  return account?.enabled !== false && String(account?.status || "") !== "error";
+}
+
 function buildAutoCleanState(storedState = {}) {
   const previousRemote = normalizeRemoteConfig(storedState.remote || {});
   const keepManualAccounts = (Array.isArray(storedState.accountPool) ? storedState.accountPool : [])
@@ -360,8 +369,9 @@ async function syncRemoteAccounts(state) {
       const fixedId = state.remote.fixedAccountId || "";
       if (state.remote.accountSourceMode === "cloud-fixed" && fixedId && state.accountPool.some((item) => item.id === fixedId)) {
         state.selectedFullAccountId = fixedId;
-      } else if (!state.selectedFullAccountId || !state.accountPool.some((item) => item.id === state.selectedFullAccountId)) {
-        state.selectedFullAccountId = data.accounts[0]?.id || state.accountPool[0]?.id || "";
+      } else if (!state.selectedFullAccountId || !state.accountPool.some((item) => item.id === state.selectedFullAccountId) || !isHealthyAccount(state.accountPool.find((item) => item.id === state.selectedFullAccountId))) {
+        const healthy = data.accounts.find(isHealthyAccount) || state.accountPool.find(isHealthyAccount);
+        state.selectedFullAccountId = healthy?.id || data.accounts[0]?.id || state.accountPool[0]?.id || "";
       }
       await saveState(state);
     }
@@ -957,6 +967,22 @@ async function uploadAccountToRemote(raw) {
   return { ok: true, account: response.account, state: sanitizeState(synced) };
 }
 
+async function uploadLocalAccountToRemote(accountId = "") {
+  const state = await getStateInternal();
+  const account = normalizeAccount(state.accountPool.find((item) => item.id === accountId));
+  if (!account?.id || !state.accountPool.some((item) => item.id === account.id)) throw new Error(`未找到账号：${accountId}`);
+  if (isCloudAccount(account)) throw new Error("该账号已经是云端摘要，不需要重复上传");
+  if (!account.password && !(account.deviceId && account.userToken) && !account.qrcode) {
+    throw new Error("本地账号缺少可上传凭据：请填写密码、token/deviceId 或账号凭证二维码内容");
+  }
+  const response = await remoteRequest(state, "/v1/accounts/client-upload", {
+    method: "POST",
+    body: JSON.stringify({ account: { ...account, source: account.qrcode ? "qrcode" : "remote" } })
+  });
+  const synced = await syncRemoteAccounts(await getStateInternal());
+  return { ok: true, account: response.account, state: sanitizeState(synced) };
+}
+
 async function saveRemoteConfig(remote = {}) {
   const state = await getStateInternal();
   const incoming = normalizeRemoteConfig({
@@ -1026,6 +1052,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
     if (message?.type === "uploadAccountToRemote") {
       sendResponse(await uploadAccountToRemote(message.account || {}));
+      return;
+    }
+    if (message?.type === "uploadLocalAccountToRemote") {
+      sendResponse(await uploadLocalAccountToRemote(String(message.accountId || "")));
       return;
     }
     if (message?.type === "saveTrace") {

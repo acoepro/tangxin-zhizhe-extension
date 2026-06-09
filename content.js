@@ -394,7 +394,31 @@
   }
 
   function isCloudAccount(account = {}) {
-    return ["remote", "qrcode", "remote-seed", "seed"].includes(account.source) || account.hasQrcode || account.hasPassword || account.hasToken;
+    return ["remote", "qrcode", "remote-seed", "seed"].includes(account.source);
+  }
+
+  function cloudHasAccount(accountId = "") {
+    return state.accountPool.some((item) => item.id === accountId && isCloudAccount(item));
+  }
+
+  function setAccountFormReadonly(readonly) {
+    const disabledFields = [
+      fields.accountId,
+      fields.accountLabel,
+      fields.accountUsername,
+      fields.accountPassword,
+      fields.accountDeviceId,
+      fields.accountToken,
+      fields.accountQrcode,
+      fields.accountNotes
+    ].filter(Boolean);
+    disabledFields.forEach((field) => {
+      field.disabled = Boolean(readonly);
+    });
+    panel.querySelectorAll('[data-action="save-account"], [data-action="upload-account-remote"], [data-action="import-current-session"]').forEach((button) => {
+      button.disabled = Boolean(readonly);
+      button.title = readonly ? "云端账号只显示脱敏摘要，不能在插件前端修改" : "";
+    });
   }
 
   function isDisplayPatchActive(probe = {}) {
@@ -765,24 +789,37 @@
     views.accountPool.innerHTML = state.accountPool.map((account) => {
       const isSelected = account.id === state.selectedFullAccountId;
       const status = account.status === "ok" ? "已验证" : account.status === "error" ? "异常" : account.status === "imported" ? "已导入" : "待验证";
+      const cloudReadonly = isCloudAccount(account);
+      const alreadyCloud = !cloudReadonly && cloudHasAccount(account.id);
       return `
         <article class="${isSelected ? "is-selected" : ""}">
           <div>
             <b>${escapeHtml(accountTitle(account))}</b>
-            <span>${escapeHtml([account.username || account.source || "未填写用户名", status, account.hasQrcode ? "二维码凭证" : "", account.userInfo?.id ? `ID ${account.userInfo.id}` : ""].filter(Boolean).join(" / "))}</span>
+            <span>${escapeHtml([account.username || account.source || "未填写用户名", status, account.hasQrcode ? "二维码凭证" : "", cloudReadonly ? "云端只读摘要" : "", account.userInfo?.id ? `ID ${account.userInfo.id}` : ""].filter(Boolean).join(" / "))}</span>
             <code>${escapeHtml(account.tokenMasked || (account.hasToken ? "token 已保存" : "token 未导入"))}</code>
             ${account.lastError ? `<p>${escapeHtml(account.lastError)}</p>` : ""}
           </div>
           <div class="txzz-account-actions">
             <button data-action="select-account" data-account-id="${escapeHtml(account.id)}">${isSelected ? "已选择" : "选择"}</button>
             <button data-action="verify-account" data-account-id="${escapeHtml(account.id)}">验证</button>
-            <button data-action="remove-account" data-account-id="${escapeHtml(account.id)}">移除</button>
+            ${cloudReadonly ? `<button data-action="show-account-summary" data-account-id="${escapeHtml(account.id)}">摘要</button>` : `<button data-action="${alreadyCloud ? "noop" : "upload-local-account-remote"}" data-account-id="${escapeHtml(account.id)}" ${alreadyCloud ? "disabled" : ""}>${alreadyCloud ? "已在云端" : "上传云端"}</button>`}
+            ${cloudReadonly ? "" : `<button data-action="remove-account" data-account-id="${escapeHtml(account.id)}">移除</button>`}
           </div>
         </article>
       `;
     }).join("") || `<div class="txzz-empty">账号池为空。</div>`;
 
-    if (selected) {
+    setAccountFormReadonly(Boolean(selected && isCloudAccount(selected)));
+    if (selected && isCloudAccount(selected)) {
+      fields.accountId.value = selected.id || "";
+      fields.accountLabel.value = selected.label || "";
+      fields.accountUsername.value = selected.username || "";
+      fields.accountPassword.value = selected.hasPassword ? "云端已保存，前端不可见" : "";
+      fields.accountDeviceId.value = "";
+      fields.accountToken.value = selected.hasToken ? "云端已保存，前端不可见" : "";
+      fields.accountQrcode.value = selected.hasQrcode ? "云端已保存，前端不可见" : "";
+      fields.accountNotes.value = selected.notes || "云端账号只显示摘要，修改请重新上传本地表单或在服务端管理。";
+    } else if (selected) {
       fields.accountId.value = selected.id || "";
       fields.accountLabel.value = selected.label || "";
       fields.accountUsername.value = selected.username || "";
@@ -791,6 +828,8 @@
       fields.accountToken.value = "";
       fields.accountQrcode.value = "";
       fields.accountNotes.value = selected.notes || "";
+    } else {
+      setAccountFormReadonly(false);
     }
   }
 
@@ -1104,6 +1143,8 @@
   }
 
   async function saveAccount() {
+    const selected = selectedAccount();
+    if (selected && isCloudAccount(selected)) throw new Error("云端账号只显示脱敏摘要，不能在插件前端修改；请先切换到本地账号或新建本地账号。");
     const account = accountFromForm();
     if (!account.id && !account.username) throw new Error("请至少填写用户名或账号 ID");
     const response = await sendRuntime("upsertAccount", { account });
@@ -1136,11 +1177,22 @@
   }
 
   async function uploadAccountRemote() {
+    const selected = selectedAccount();
+    if (selected && isCloudAccount(selected)) throw new Error("云端账号只显示脱敏摘要，不能直接重复上传；请先在表单中新建本地账号或导入当前会话。");
     const account = accountFromForm();
     if (!account.id && !account.username) throw new Error("请至少填写用户名或账号 ID");
     const response = await sendRuntime("uploadAccountToRemote", { account });
     syncSavedState(response.state || {});
     emitFlow("远程账号池", `已上传 ${account.label || account.username} 到 Worker，凭据由服务端加密保存`, "ok");
+  }
+
+  async function uploadLocalAccountRemote(accountId) {
+    const account = state.accountPool.find((item) => item.id === accountId);
+    if (!account) throw new Error(`未找到账号：${accountId}`);
+    if (isCloudAccount(account)) throw new Error("该账号已经是云端摘要，不需要重复上传");
+    const response = await sendRuntime("uploadLocalAccountToRemote", { accountId });
+    syncSavedState(response.state || {});
+    emitFlow("远程账号池", `已上传 ${accountTitle(account)}，账号池已更新为云端只读摘要`, "ok");
   }
 
   async function selectAccount(accountId) {
@@ -1244,11 +1296,16 @@
       }
       if (action === "select-account") await selectAccount(accountId);
       if (action === "verify-account") await verifyAccount(accountId);
+      if (action === "show-account-summary") {
+        const account = state.accountPool.find((item) => item.id === accountId);
+        emitFlow("云端账号摘要", `${accountTitle(account)} / ${account?.status || "idle"} / ${account?.lastError ? `错误：${account.lastError}` : "凭证明文仅保存在服务端"}`, account?.status === "error" ? "error" : "ok");
+      }
       if (action === "remove-account") await removeAccount(accountId);
       if (action === "save-account") await saveAccount();
       if (action === "save-remote") await saveRemoteConfig();
       if (action === "sync-remote") await syncRemoteAccounts();
       if (action === "upload-account-remote") await uploadAccountRemote();
+      if (action === "upload-local-account-remote") await uploadLocalAccountRemote(accountId);
       if (action === "import-current-session") await importCurrentSession();
       if (action === "export") {
         const trace = await exportTrace();
