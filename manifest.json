@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "糖心志者",
-  "version": "1.1.0",
-  "description": "Authorized CTF sandbox helper for account-state visualization, playback-chain tracing, and dual-session verification.",
+  "version": "1.1.2",
+  "description": "授权 CTF 隔离靶场账号状态、播放链路和账号池验证工具。",
   "permissions": [
     "storage"
   ],

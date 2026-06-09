@@ -18,6 +18,7 @@
   z-index: 2147483647;
   width: 100vw;
   height: 100vh;
+  height: 100dvh;
   color: var(--txzz-text);
   font: 13px/1.45 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   letter-spacing: 0;
@@ -64,6 +65,8 @@
   width: min(860px, calc(100vw - 24px));
   max-height: calc(100vh - 24px);
   transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
   border: 1px solid var(--txzz-line);
   border-radius: 8px;
@@ -85,7 +88,16 @@
   padding: 13px 14px;
   border-bottom: 1px solid var(--txzz-line);
   background: linear-gradient(90deg, #251821, #171820);
+  cursor: default;
+  flex: 0 0 auto;
+  position: relative;
+  z-index: 20;
+  user-select: none;
+}
+
+#txzz-panel .txzz-brand[data-drag-handle] {
   cursor: grab;
+  touch-action: none;
 }
 
 #txzz-panel .txzz-brand {
@@ -136,18 +148,26 @@
   font: inherit;
   font-weight: 800;
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 #txzz-panel .txzz-head-actions button {
   width: 30px;
   height: 30px;
   padding: 0;
+  position: relative;
+  z-index: 25;
 }
 
 #txzz-panel .txzz-main {
+  flex: 1 1 auto;
+  min-height: 0;
   max-height: calc(100vh - 72px);
   overflow: auto;
   padding: 12px;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 #txzz-panel .txzz-hero {
@@ -630,6 +650,28 @@
 }
 
 @media (max-width: 720px) {
+  #txzz-panel .txzz-shell {
+    left: calc(var(--txzz-vleft, 0px) + 8px);
+    top: calc(var(--txzz-vtop, 0px) + 8px);
+    width: calc(var(--txzz-vvw, 100vw) - 16px);
+    height: calc(var(--txzz-vvh, 100dvh) - 16px);
+    max-height: calc(var(--txzz-vvh, 100dvh) - 16px);
+    transform: none;
+  }
+
+  #txzz-panel.txzz-dragged .txzz-shell {
+    transform: none;
+  }
+
+  #txzz-panel .txzz-main {
+    max-height: none;
+    padding: 10px;
+  }
+
+  #txzz-panel .txzz-head {
+    padding: 11px 12px;
+  }
+
   #txzz-panel .txzz-hero,
   #txzz-panel .txzz-grid,
   #txzz-panel .txzz-compare,
@@ -644,9 +686,36 @@
   }
 
   #txzz-panel .txzz-grid,
-  #txzz-panel .txzz-tools,
-  #txzz-panel .txzz-tabs {
+  #txzz-panel .txzz-tools {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #txzz-panel .txzz-tabs {
+    position: sticky;
+    top: 0;
+    z-index: 15;
+    display: flex;
+    grid-template-columns: none;
+    gap: 7px;
+    overflow-x: auto;
+    margin: 10px -10px 0;
+    padding: 8px 10px;
+    border-top: 1px solid rgba(244, 219, 208, 0.08);
+    border-bottom: 1px solid rgba(244, 219, 208, 0.08);
+    background: linear-gradient(180deg, rgba(25, 23, 31, 0.98), rgba(18, 17, 22, 0.96));
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+
+  #txzz-panel .txzz-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  #txzz-panel .txzz-tabs button {
+    flex: 0 0 auto;
+    min-width: 86px;
+    padding: 0 12px;
+    white-space: nowrap;
   }
 
   #txzz-panel .txzz-account-pool {

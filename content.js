@@ -50,8 +50,8 @@
       <span>志</span>
     </button>
     <div class="txzz-shell" role="dialog" aria-label="糖心志者安全测试面板">
-      <header class="txzz-head" data-drag-handle>
-        <div class="txzz-brand">
+      <header class="txzz-head">
+        <div class="txzz-brand" data-drag-handle>
           <i>志</i>
           <div>
             <strong>糖心志者</strong>
@@ -59,8 +59,8 @@
           </div>
         </div>
         <div class="txzz-head-actions">
-          <button data-action="refresh" title="刷新状态" aria-label="刷新状态">R</button>
-          <button data-action="toggle" title="关闭" aria-label="关闭">x</button>
+          <button data-action="refresh" title="刷新状态" aria-label="刷新状态">刷</button>
+          <button data-action="close" title="关闭面板" aria-label="关闭面板">关</button>
         </div>
       </header>
       <main class="txzz-main">
@@ -269,6 +269,22 @@
 
   let drag = null;
   let ignoreNextToggle = false;
+
+  function isCompactViewport() {
+    return window.matchMedia?.("(max-width: 720px)")?.matches || window.innerWidth <= 720;
+  }
+
+  function syncViewportVars() {
+    const visual = window.visualViewport;
+    const width = Math.max(280, Math.round(visual?.width || window.innerWidth || document.documentElement.clientWidth || 390));
+    const height = Math.max(360, Math.round(visual?.height || window.innerHeight || document.documentElement.clientHeight || 640));
+    const left = Math.round(visual?.offsetLeft || 0);
+    const top = Math.round(visual?.offsetTop || 0);
+    panel.style.setProperty("--txzz-vvw", `${width}px`);
+    panel.style.setProperty("--txzz-vvh", `${height}px`);
+    panel.style.setProperty("--txzz-vleft", `${left}px`);
+    panel.style.setProperty("--txzz-vtop", `${top}px`);
+  }
 
   const DISPLAY_USER_PATCH = {
     is_vip: "y",
@@ -1120,6 +1136,7 @@
       ignoreNextToggle = false;
       return;
     }
+    syncViewportVars();
     state.expanded = typeof force === "boolean" ? force : !state.expanded;
     panel.classList.toggle("txzz-open", state.expanded);
     panel.classList.toggle("txzz-closed", !state.expanded);
@@ -1151,6 +1168,7 @@
     const accountId = actionEl.dataset.accountId || state.selectedFullAccountId;
     try {
       if (action === "toggle") togglePanel();
+      if (action === "close") togglePanel(false);
       if (action === "refresh") {
         await collectSession();
         await loadSavedState(false);
@@ -1220,6 +1238,9 @@
   });
 
   function startDrag(event) {
+    if (event.type === "mousedown" && event.button !== 0) return;
+    if (event.target.closest("button,input,textarea,select,a,[data-action],[data-tab]")) return;
+    if (state.expanded && isCompactViewport()) return;
     const point = event.touches ? event.touches[0] : event;
     const target = state.expanded ? shell : ball;
     if (state.expanded && !event.target.closest("[data-drag-handle]")) return;
@@ -1243,8 +1264,15 @@
     const dx = point.clientX - drag.x;
     const dy = point.clientY - drag.y;
     if (Math.abs(dx) + Math.abs(dy) > 4) drag.moved = true;
-    const left = Math.min(Math.max(8, drag.left + dx), window.innerWidth - drag.target.offsetWidth - 8);
-    const top = Math.min(Math.max(8, drag.top + dy), window.innerHeight - drag.target.offsetHeight - 8);
+    const visual = window.visualViewport;
+    const minLeft = Math.round(visual?.offsetLeft || 0) + 8;
+    const minTop = Math.round(visual?.offsetTop || 0) + 8;
+    const viewportWidth = Math.round(visual?.width || window.innerWidth || document.documentElement.clientWidth || 390);
+    const viewportHeight = Math.round(visual?.height || window.innerHeight || document.documentElement.clientHeight || 640);
+    const maxLeft = Math.max(minLeft, minLeft + viewportWidth - drag.target.offsetWidth - 16);
+    const maxTop = Math.max(minTop, minTop + viewportHeight - drag.target.offsetHeight - 16);
+    const left = Math.min(Math.max(minLeft, drag.left + dx), maxLeft);
+    const top = Math.min(Math.max(minTop, drag.top + dy), maxTop);
     if (drag.panel) {
       shell.style.setProperty("--txzz-left", `${left}px`);
       shell.style.setProperty("--txzz-top", `${top}px`);
@@ -1346,12 +1374,17 @@
   ball.addEventListener("pointerup", pointerOpenFallback);
   ball.addEventListener("touchstart", startDrag, { passive: false });
   ball.addEventListener("touchend", pointerOpenFallback, { passive: false });
-  panel.querySelector("[data-drag-handle]").addEventListener("mousedown", startDrag);
-  panel.querySelector("[data-drag-handle]").addEventListener("touchstart", startDrag, { passive: false });
+  const dragHandle = panel.querySelector("[data-drag-handle]");
+  dragHandle.addEventListener("mousedown", startDrag);
+  dragHandle.addEventListener("touchstart", startDrag, { passive: false });
   window.addEventListener("mousemove", moveDrag);
   window.addEventListener("mouseup", endDrag);
   window.addEventListener("touchmove", moveDrag, { passive: false });
   window.addEventListener("touchend", endDrag);
+  window.addEventListener("resize", syncViewportVars);
+  window.addEventListener("orientationchange", () => window.setTimeout(syncViewportVars, 80));
+  window.visualViewport?.addEventListener("resize", syncViewportVars);
+  window.visualViewport?.addEventListener("scroll", syncViewportVars);
 
   window.addEventListener("message", (event) => {
     if (event.source !== window || event.data?.source !== "txzz-page-hook") return;
@@ -1379,6 +1412,7 @@
   });
 
   installHook();
+  syncViewportVars();
   collectSession().catch(() => {});
   applyDisplayPatch().catch(() => {});
   installVisibleDisplayLoop();
