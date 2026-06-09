@@ -8,7 +8,7 @@ const API_CONFIG = {
 };
 
 const REMOTE_CONFIG = {
-  baseUrl: "https://txzz.lsy20.top",
+  baseUrl: "https://txzz-secure-pool.3199912548.workers.dev",
   clientToken: "txzz_client_91ee115d9bf5c8e800f2def383f9da71d449fb2a11ccba455c9abb7c590701f2",
   adminToken: "",
   enabled: true,

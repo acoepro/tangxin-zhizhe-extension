@@ -140,7 +140,7 @@
             <div class="txzz-remote-grid">
               <label>
                 Worker URL
-                <input data-field="remoteBaseUrl" placeholder="https://txzz.lsy20.top">
+                <input data-field="remoteBaseUrl" placeholder="https://txzz-secure-pool.3199912548.workers.dev">
               </label>
               <label>
                 Client Token
