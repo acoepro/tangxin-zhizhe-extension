@@ -162,92 +162,138 @@
         </section>
 
         <section class="txzz-view" data-view-panel="accounts">
-          <div class="txzz-remote-box">
-            <div class="txzz-section-head txzz-section-head-tight">
-              <strong>远程账号池</strong>
-              <button data-action="sync-remote">同步远程</button>
-            </div>
-            <div class="txzz-remote-grid">
-              <label>
-                Worker URL
-                <input data-field="remoteBaseUrl" placeholder="https://txzz-secure-pool.3199912548.workers.dev">
-              </label>
-              <label>
-                Client Token
-                <input data-field="remoteClientToken" type="password" placeholder="已内置，留空即可">
-              </label>
-              <label>
-                Admin Token
-                <input data-field="remoteAdminToken" type="password" placeholder="仅上传账号时填写，日常留空">
-              </label>
-              <label>
-                账号来源
-                <select data-field="accountSourceMode">
-                  <option value="cloud">云端随机轮换</option>
-                  <option value="cloud-fixed">固定云端账号</option>
-                  <option value="local">本地选中账号</option>
-                  <option value="cloud-first">云端优先，本地兜底</option>
-                </select>
-              </label>
-              <label>
-                固定云端账号
-                <select data-field="remoteFixedAccountId">
-                  <option value="">未选择</option>
-                </select>
-              </label>
-            </div>
-            <div class="txzz-form-actions">
-              <button data-action="save-remote">保存远程配置</button>
-              <button data-action="upload-account-remote">上传当前表单账号</button>
-            </div>
-            <small data-view="remoteMeta">远程未配置</small>
-          </div>
-          <div class="txzz-account-layout">
-            <div>
-              <div class="txzz-section-head txzz-section-head-tight">
-                <strong>完整权限账号池</strong>
-                <button data-action="verify-account">验证选中账号</button>
+          <div class="txzz-account-console">
+            <div class="txzz-account-topbar">
+              <div>
+                <strong>账号池控制台</strong>
+                <small data-view="accountPoolMeta">云端账号默认只显示可用账号</small>
               </div>
-              <div class="txzz-account-pool" data-view="accountPool"></div>
+              <div class="txzz-account-top-actions">
+                <button type="button" class="txzz-primary" data-action="open-account-form">添加账号</button>
+                <button type="button" data-action="sync-remote">同步云端</button>
+                <button type="button" data-action="verify-account">验证选中</button>
+              </div>
             </div>
-            <form class="txzz-account-form" autocomplete="off">
-              <label>
-                账号 ID
-                <input data-field="accountId" placeholder="留空按用户名生成">
-              </label>
-              <label>
-                显示名称
-                <input data-field="accountLabel" placeholder="例如：完整权限 01">
-              </label>
-              <label>
-                用户名
-                <input data-field="accountUsername" placeholder="lsyhook">
-              </label>
-              <label>
-                密码
-                <input data-field="accountPassword" type="password" placeholder="保存后可用于自动登录">
-              </label>
-              <label>
-                deviceId
-                <input data-field="accountDeviceId" placeholder="可选，导入 token 时必填">
-              </label>
-              <label>
-                userToken
-                <input data-field="accountToken" placeholder="可选：xxxxxxxx_userid">
-              </label>
-              <label class="txzz-wide">
-                账号凭证二维码内容
-                <textarea data-field="accountQrcode" spellcheck="false" placeholder="可选：从账号凭证二维码解析出的明文"></textarea>
-              </label>
-              <label class="txzz-wide">
-                备注
-                <input data-field="accountNotes" placeholder="用途、来源、权限说明">
-              </label>
+
+            <div class="txzz-account-summary" data-view="accountPoolSummary"></div>
+
+            <details class="txzz-remote-box" open>
+              <summary>
+                <span>远程配置</span>
+                <small data-view="remoteMeta">远程未配置</small>
+              </summary>
+              <div class="txzz-remote-grid">
+                <label>
+                  Worker URL
+                  <input data-field="remoteBaseUrl" placeholder="https://txzzsecure.lsy20.top">
+                </label>
+                <label>
+                  账号来源
+                  <select data-field="accountSourceMode">
+                    <option value="cloud">云端随机轮换</option>
+                    <option value="cloud-fixed">固定云端账号</option>
+                    <option value="local">本地选中账号</option>
+                    <option value="cloud-first">云端优先，本地兜底</option>
+                  </select>
+                </label>
+                <label>
+                  固定云端账号
+                  <select data-field="remoteFixedAccountId">
+                    <option value="">未选择</option>
+                  </select>
+                </label>
+              </div>
               <div class="txzz-form-actions">
-                <button data-action="save-account">保存/更新账号</button>
-                <button data-action="import-current-session">导入当前会话为完整账号</button>
+                <button type="button" data-action="save-remote">保存配置</button>
+                <button type="button" data-action="sync-remote">同步云端</button>
               </div>
-            </form>
+            </details>
+
+            <div class="txzz-account-filter">
+              <div>
+                <strong>账号列表</strong>
+                <small data-view="accountFilterMeta">默认隐藏失效云端账号</small>
+              </div>
+              <label class="txzz-switch">
+                <input data-field="showInvalidCloudAccounts" type="checkbox">
+                <span>查看已失效云端账号</span>
+              </label>
+            </div>
+
+            <div class="txzz-account-pool" data-view="accountPool"></div>
+
+            <div class="txzz-account-modal" data-view="accountModal" hidden>
+              <button type="button" class="txzz-account-modal-mask" data-action="close-account-form" aria-label="关闭添加账号弹窗"></button>
+              <div class="txzz-account-dialog" role="dialog" aria-label="添加账号">
+                <div class="txzz-form-title">
+                  <div>
+                    <strong data-view="accountFormTitle">添加本地账号</strong>
+                    <small data-view="accountFormHint">先选择保存方式，再填写对应内容</small>
+                  </div>
+                  <button type="button" data-action="close-account-form">关闭</button>
+                </div>
+
+                <div class="txzz-account-type-picker" data-view="accountTypePicker">
+                  <button type="button" data-action="choose-account-type" data-credential-mode="password">
+                    <b>账号密码</b>
+                    <span>填写用户名和密码，适合长期自动验证。</span>
+                  </button>
+                  <button type="button" data-action="choose-account-type" data-credential-mode="qrcode">
+                    <b>账号凭证</b>
+                    <span>粘贴账号凭证内容，本地保存后可上传云端加密。</span>
+                  </button>
+                  <button type="button" data-action="choose-account-type" data-credential-mode="token">
+                    <b>token/deviceId</b>
+                    <span>导入已有会话的 deviceId 和 userToken。</span>
+                  </button>
+                </div>
+
+                <form class="txzz-account-form" data-view="accountForm" autocomplete="off">
+                  <input data-field="accountCredentialMode" type="hidden" value="password">
+                  <div class="txzz-selected-type">
+                    <span data-view="accountCredentialLabel">账号密码</span>
+                    <button type="button" data-action="back-account-type">更换类型</button>
+                  </div>
+                  <label>
+                    账号 ID
+                    <input data-field="accountId" placeholder="留空自动生成">
+                  </label>
+                  <label>
+                    账号昵称
+                    <input data-field="accountLabel" placeholder="例如：完整账号 01">
+                  </label>
+                  <label data-credential="password">
+                    用户名
+                    <input data-field="accountUsername" placeholder="账号用户名">
+                  </label>
+                  <label data-credential="password">
+                    密码
+                    <input data-field="accountPassword" type="password" placeholder="保存后可用于服务端登录">
+                  </label>
+                  <label data-credential="token">
+                    deviceId
+                    <input data-field="accountDeviceId" placeholder="导入 token 时必填">
+                  </label>
+                  <label data-credential="token">
+                    userToken
+                    <input data-field="accountToken" placeholder="xxxxxxxx_userid">
+                  </label>
+                  <label class="txzz-wide" data-credential="qrcode">
+                    账号凭证内容
+                    <textarea data-field="accountQrcode" spellcheck="false" placeholder="粘贴从账号凭证二维码解析出的明文"></textarea>
+                  </label>
+                  <label class="txzz-wide">
+                    备注
+                    <input data-field="accountNotes" placeholder="用途、权限范围或维护说明">
+                  </label>
+                  <div class="txzz-form-actions">
+                    <button type="button" data-action="save-account">保存本地</button>
+                    <button type="button" data-action="upload-account-remote">保存并上传云端</button>
+                    <button type="button" data-action="import-current-session">导入当前会话</button>
+                  </div>
+                </form>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -304,6 +350,13 @@
     fullDetails: [],
     downloadTasks: {},
     downloadSnapshots: []
+  };
+
+  const uiState = {
+    accountFormOpen: false,
+    accountTypePicking: true,
+    showInvalidCloudAccounts: false,
+    editingAccountId: ""
   };
 
   let drag = null;
@@ -486,6 +539,49 @@
     return account?.label || account?.username || account?.id || "完整账号";
   }
 
+  function accountNickname(account = {}) {
+    return account?.userInfo?.nickname ||
+      account?.userInfo?.account_name ||
+      account?.userInfo?.username ||
+      account?.label ||
+      account?.username ||
+      account?.id ||
+      "未命名账号";
+  }
+
+  function accountStatusInfo(account = {}) {
+    if (account.enabled === false) {
+      return { ok: false, label: "不可用", tone: "bad", reason: "账号已停用" };
+    }
+    const hasCredential = Boolean(account.hasPassword || account.password || account.hasQrcode || account.qrcode || account.hasToken || account.userToken);
+    if (!hasCredential) {
+      return { ok: false, label: "不可用", tone: "bad", reason: "账号没有可用凭据" };
+    }
+    if (account.status === "ok") {
+      return { ok: true, label: "可用", tone: "good", reason: account.lastVerifiedAt ? `上次验证 ${account.lastVerifiedAt}` : "账号状态正常" };
+    }
+    if (account.status === "error") {
+      return { ok: false, label: "不可用", tone: "bad", reason: account.lastError || "最近一次验证失败" };
+    }
+    if (account.status === "imported") {
+      return { ok: true, label: "本地可用", tone: "good", reason: "已从当前浏览器会话导入" };
+    }
+    return { ok: true, label: "待验证", tone: "warn", reason: "尚未执行验证，可点击验证确认" };
+  }
+
+  function credentialLabel(account = {}) {
+    if (account.hasQrcode || account.qrcode) return "账号凭证";
+    if (account.hasPassword || account.password) return "账号密码";
+    if (account.hasToken || account.userToken) return "token/deviceId";
+    return "无凭据";
+  }
+
+  function credentialModeLabel(mode = "password") {
+    if (mode === "qrcode") return "账号凭证";
+    if (mode === "token") return "token/deviceId";
+    return "账号密码";
+  }
+
   function selectedAccount() {
     return state.accountPool.find((item) => item.id === state.selectedFullAccountId) || state.accountPool[0] || null;
   }
@@ -503,6 +599,108 @@
 
   function cloudHasAccount(accountId = "") {
     return state.accountPool.some((item) => item.id === accountId && isCloudAccount(item));
+  }
+
+  function visibleAccountPool() {
+    return state.accountPool.filter((account) => {
+      if (!isCloudAccount(account)) return true;
+      if (uiState.showInvalidCloudAccounts) return true;
+      return accountStatusInfo(account).ok;
+    });
+  }
+
+  function accountPoolStats() {
+    const accounts = state.accountPool || [];
+    const cloud = accounts.filter(isCloudAccount);
+    const local = accounts.filter((account) => !isCloudAccount(account));
+    const invalidCloud = cloud.filter((account) => !accountStatusInfo(account).ok);
+    return {
+      total: accounts.length,
+      cloud: cloud.length,
+      local: local.length,
+      availableCloud: cloud.length - invalidCloud.length,
+      invalidCloud: invalidCloud.length,
+      visible: visibleAccountPool().length
+    };
+  }
+
+  function setAccountCredentialMode(mode = fields.accountCredentialMode?.value || "password") {
+    if (fields.accountCredentialMode) fields.accountCredentialMode.value = mode;
+    if (views.accountCredentialLabel) views.accountCredentialLabel.textContent = credentialModeLabel(mode);
+    if (views.accountFormHint) {
+      views.accountFormHint.textContent = mode === "qrcode"
+        ? "填写账号昵称和账号凭证内容"
+        : mode === "token"
+          ? "填写账号昵称、deviceId 和 userToken"
+          : "填写账号昵称、用户名和密码";
+    }
+    panel.querySelectorAll("[data-credential]").forEach((item) => {
+      const credential = item.dataset.credential;
+      item.hidden = credential !== mode;
+    });
+  }
+
+  function resetAccountForm() {
+    uiState.editingAccountId = "";
+    setAccountFormReadonly(false);
+    [
+      fields.accountId,
+      fields.accountLabel,
+      fields.accountUsername,
+      fields.accountPassword,
+      fields.accountDeviceId,
+      fields.accountToken,
+      fields.accountQrcode,
+      fields.accountNotes
+    ].filter(Boolean).forEach((field) => {
+      field.value = "";
+    });
+    setAccountCredentialMode("password");
+    if (views.accountFormTitle) views.accountFormTitle.textContent = "添加本地账号";
+  }
+
+  function openAccountForm(account = null, mode = "") {
+    uiState.accountFormOpen = true;
+    uiState.accountTypePicking = !account && !mode;
+    setAccountFormReadonly(false);
+    if (!account) {
+      resetAccountForm();
+      if (mode) {
+        uiState.accountTypePicking = false;
+        setAccountCredentialMode(mode);
+        setTimeout(() => fields.accountLabel?.focus?.(), 0);
+      }
+      renderAccounts();
+      return;
+    }
+    uiState.accountTypePicking = false;
+    uiState.editingAccountId = account.id || "";
+    if (views.accountFormTitle) views.accountFormTitle.textContent = isCloudAccount(account) ? "云端账号摘要" : "编辑本地账号";
+    fields.accountId.value = account.id || "";
+    fields.accountLabel.value = account.label || accountNickname(account);
+    fields.accountUsername.value = account.username || "";
+    fields.accountPassword.value = "";
+    fields.accountDeviceId.value = "";
+    fields.accountToken.value = "";
+    fields.accountQrcode.value = "";
+    fields.accountNotes.value = account.notes || "";
+    setAccountCredentialMode(account.hasQrcode || account.qrcode ? "qrcode" : account.hasToken || account.userToken ? "token" : "password");
+    setAccountFormReadonly(isCloudAccount(account));
+    renderAccounts();
+  }
+
+  function closeAccountForm() {
+    uiState.accountFormOpen = false;
+    uiState.accountTypePicking = true;
+    uiState.editingAccountId = "";
+    views.accountModal.hidden = true;
+    setAccountFormReadonly(false);
+  }
+
+  function backAccountTypePicker() {
+    if (uiState.editingAccountId) return;
+    uiState.accountTypePicking = true;
+    renderAccounts();
   }
 
   function setAccountFormReadonly(readonly) {
@@ -1057,18 +1255,20 @@
   }
 
   function renderAccounts() {
-    const selected = selectedAccount();
     const remote = state.remote || {};
     renderStats();
     if (fields.remoteBaseUrl) fields.remoteBaseUrl.value = remote.baseUrl || "";
     if (fields.remoteClientToken) fields.remoteClientToken.value = "";
     if (fields.remoteAdminToken) fields.remoteAdminToken.value = "";
     if (fields.accountSourceMode) fields.accountSourceMode.value = remote.accountSourceMode || "cloud";
+    if (fields.showInvalidCloudAccounts) fields.showInvalidCloudAccounts.checked = uiState.showInvalidCloudAccounts;
     if (fields.remoteFixedAccountId) {
       const fixedId = remote.fixedAccountId || state.selectedFullAccountId || "";
-      const cloudAccounts = state.accountPool.filter(isCloudAccount);
+      const cloudAccounts = state.accountPool
+        .filter(isCloudAccount)
+        .filter((account) => uiState.showInvalidCloudAccounts || accountStatusInfo(account).ok);
       fields.remoteFixedAccountId.innerHTML = `<option value="">未选择</option>` + cloudAccounts.map((account) => `
-        <option value="${escapeHtml(account.id)}"${account.id === fixedId ? " selected" : ""}>${escapeHtml(accountTitle(account))} / ${escapeHtml(account.id)}</option>
+        <option value="${escapeHtml(account.id)}"${account.id === fixedId ? " selected" : ""}>${escapeHtml(accountNickname(account))} / ${escapeHtml(accountStatusInfo(account).label)}</option>
       `).join("");
       fields.remoteFixedAccountId.value = fixedId;
     }
@@ -1076,54 +1276,71 @@
       const sourceLabel = remoteSourceLabel(remote.accountSourceMode);
       const fixedText = remote.accountSourceMode === "cloud-fixed" ? ` / 固定=${remote.fixedAccountId || state.selectedFullAccountId || "未选择"}` : "";
       views.remoteMeta.textContent = remote.baseUrl
-        ? `已配置 / 来源=${sourceLabel}${fixedText} / client=${remote.hasClientToken ? remote.clientTokenMasked || "set" : "未设置"} / admin=${remote.hasAdminToken ? remote.adminTokenMasked || "set" : "未设置"} / ${remote.lastError ? `错误：${remote.lastError}` : remote.lastSyncAt ? `上次同步 ${remote.lastSyncAt}` : "等待同步"}`
-        : "远程未配置；完整账号可上传到 Cloudflare Worker/Supabase 后再同步。";
+        ? `已配置 / 来源=${sourceLabel}${fixedText} / ${remote.lastError ? `错误：${remote.lastError}` : remote.lastSyncAt ? `上次同步 ${remote.lastSyncAt}` : "等待同步"}`
+        : "远程未配置；本地账号可上传到 Worker/Supabase 后再同步。";
     }
-    views.accountPool.innerHTML = state.accountPool.map((account) => {
+    const stats = accountPoolStats();
+    if (views.accountPoolMeta) {
+      views.accountPoolMeta.textContent = `共 ${stats.total} 个账号 / 云端可用 ${stats.availableCloud} / 本地 ${stats.local}${stats.invalidCloud ? ` / 已隐藏失效 ${stats.invalidCloud}` : ""}`;
+    }
+    if (views.accountFilterMeta) {
+      views.accountFilterMeta.textContent = uiState.showInvalidCloudAccounts
+        ? `正在显示 ${stats.invalidCloud} 个已失效云端账号`
+        : stats.invalidCloud ? `已隐藏 ${stats.invalidCloud} 个失效云端账号` : "当前没有失效云端账号";
+    }
+    if (views.accountPoolSummary) {
+      views.accountPoolSummary.innerHTML = [
+        ["全部", stats.total],
+        ["云端可用", stats.availableCloud],
+        ["本地", stats.local],
+        ["失效", stats.invalidCloud]
+      ].map(([label, value]) => `
+        <article>
+          <span>${escapeHtml(label)}</span>
+          <strong>${escapeHtml(value)}</strong>
+        </article>
+      `).join("");
+    }
+    if (views.accountModal) views.accountModal.hidden = !uiState.accountFormOpen;
+    views.accountTypePicker?.classList.toggle("is-active", uiState.accountFormOpen && uiState.accountTypePicking);
+    views.accountForm?.classList.toggle("is-open", uiState.accountFormOpen && !uiState.accountTypePicking);
+    setAccountCredentialMode(fields.accountCredentialMode?.value || "password");
+
+    const visibleAccounts = visibleAccountPool();
+    views.accountPool.innerHTML = visibleAccounts.map((account) => {
       const isSelected = account.id === state.selectedFullAccountId;
-      const status = account.status === "ok" ? "已验证" : account.status === "error" ? "异常" : account.status === "imported" ? "已导入" : "待验证";
       const cloudReadonly = isCloudAccount(account);
       const alreadyCloud = !cloudReadonly && cloudHasAccount(account.id);
+      const status = accountStatusInfo(account);
+      const title = accountNickname(account);
+      const meta = [
+        cloudReadonly ? "云端账号" : "本地账号",
+        credentialLabel(account),
+        account.username ? `用户名 ${account.username}` : "",
+        account.userInfo?.id ? `用户 ID ${account.userInfo.id}` : "",
+        account.id
+      ].filter(Boolean).join(" / ");
       return `
-        <article class="${isSelected ? "is-selected" : ""}">
-          <div>
-            <b>${escapeHtml(accountTitle(account))}</b>
-            <span>${escapeHtml([account.username || account.source || "未填写用户名", status, account.hasQrcode ? "二维码凭证" : "", cloudReadonly ? "云端只读摘要" : "", account.userInfo?.id ? `ID ${account.userInfo.id}` : ""].filter(Boolean).join(" / "))}</span>
-            <code>${escapeHtml(account.tokenMasked || (account.hasToken ? "token 已保存" : "token 未导入"))}</code>
-            ${account.lastError ? `<p>${escapeHtml(account.lastError)}</p>` : ""}
+        <article class="${["txzz-account-card", isSelected ? "is-selected" : "", cloudReadonly ? "is-cloud" : "is-local", status.ok ? "is-usable" : "is-invalid"].filter(Boolean).join(" ")}">
+          <div class="txzz-account-card-main">
+            <div class="txzz-account-card-title">
+              <b>${escapeHtml(title)}</b>
+              <em class="txzz-status-${escapeHtml(status.tone)}">${escapeHtml(status.label)}</em>
+            </div>
+            <span>${escapeHtml(meta)}</span>
+            <p>${escapeHtml(status.ok ? status.reason : `不可用原因：${status.reason}`)}</p>
+            ${cloudReadonly ? `<code>云端摘要：${escapeHtml(account.tokenMasked || account.qrcodeMasked || account.passwordMasked || "凭据仅服务端可见")}</code>` : `<code>${escapeHtml(account.tokenMasked || (account.hasToken ? "token 已保存" : "本地凭据可编辑"))}</code>`}
           </div>
           <div class="txzz-account-actions">
             <button data-action="select-account" data-account-id="${escapeHtml(account.id)}">${isSelected ? "已选择" : "选择"}</button>
             <button data-action="verify-account" data-account-id="${escapeHtml(account.id)}">验证</button>
-            ${cloudReadonly ? `<button data-action="show-account-summary" data-account-id="${escapeHtml(account.id)}">摘要</button>` : `<button data-action="${alreadyCloud ? "noop" : "upload-local-account-remote"}" data-account-id="${escapeHtml(account.id)}" ${alreadyCloud ? "disabled" : ""}>${alreadyCloud ? "已在云端" : "上传云端"}</button>`}
+            ${cloudReadonly ? `<button data-action="show-account-summary" data-account-id="${escapeHtml(account.id)}">摘要</button>` : `<button data-action="edit-account" data-account-id="${escapeHtml(account.id)}">编辑</button>`}
+            ${cloudReadonly ? "" : `<button data-action="${alreadyCloud ? "noop" : "upload-local-account-remote"}" data-account-id="${escapeHtml(account.id)}" ${alreadyCloud ? "disabled" : ""}>${alreadyCloud ? "已在云端" : "上传云端"}</button>`}
             ${cloudReadonly ? "" : `<button data-action="remove-account" data-account-id="${escapeHtml(account.id)}">移除</button>`}
           </div>
         </article>
       `;
-    }).join("") || `<div class="txzz-empty">账号池为空。</div>`;
-
-    setAccountFormReadonly(Boolean(selected && isCloudAccount(selected)));
-    if (selected && isCloudAccount(selected)) {
-      fields.accountId.value = selected.id || "";
-      fields.accountLabel.value = selected.label || "";
-      fields.accountUsername.value = selected.username || "";
-      fields.accountPassword.value = selected.hasPassword ? "云端已保存，前端不可见" : "";
-      fields.accountDeviceId.value = "";
-      fields.accountToken.value = selected.hasToken ? "云端已保存，前端不可见" : "";
-      fields.accountQrcode.value = selected.hasQrcode ? "云端已保存，前端不可见" : "";
-      fields.accountNotes.value = selected.notes || "云端账号只显示摘要，修改请重新上传本地表单或在服务端管理。";
-    } else if (selected) {
-      fields.accountId.value = selected.id || "";
-      fields.accountLabel.value = selected.label || "";
-      fields.accountUsername.value = selected.username || "";
-      fields.accountPassword.value = "";
-      fields.accountDeviceId.value = "";
-      fields.accountToken.value = "";
-      fields.accountQrcode.value = "";
-      fields.accountNotes.value = selected.notes || "";
-    } else {
-      setAccountFormReadonly(false);
-    }
+    }).join("") || `<div class="txzz-empty">${stats.invalidCloud && !uiState.showInvalidCloudAccounts ? "当前没有可显示账号，已隐藏失效云端账号；可打开「查看已失效云端账号」。" : "账号池为空，请点击「添加账号」保存本地账号，或同步云端账号池。"}</div>`;
   }
 
   function renderFullDetails() {
@@ -1440,28 +1657,49 @@
   }
 
   function accountFromForm() {
+    const label = fields.accountLabel.value.trim();
     const username = fields.accountUsername.value.trim();
-    const id = fields.accountId.value.trim() || (username ? `full-${username.toLowerCase().replace(/[^a-z0-9_-]+/g, "-")}` : "");
-    return {
+    const slugSource = username || label;
+    const slugValue = slugSource.toLowerCase().replace(/[^a-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 42);
+    const id = fields.accountId.value.trim() || (slugValue ? `full-${slugValue}` : `full-local-${Date.now()}`);
+    const mode = fields.accountCredentialMode?.value || "password";
+    const account = {
       id,
-      label: fields.accountLabel.value.trim() || username || id,
-      username,
-      password: fields.accountPassword.value,
-      deviceId: fields.accountDeviceId.value.trim(),
-      userToken: fields.accountToken.value.trim(),
-      qrcode: fields.accountQrcode.value.trim(),
+      label: label || username || id,
+      username: mode === "password" ? username : "",
+      password: mode === "password" ? fields.accountPassword.value : "",
+      deviceId: mode === "token" ? fields.accountDeviceId.value.trim() : "",
+      userToken: mode === "token" ? fields.accountToken.value.trim() : "",
+      qrcode: mode === "qrcode" ? fields.accountQrcode.value.trim() : "",
       notes: fields.accountNotes.value.trim(),
       source: id === "full-lsyhook" ? "seed" : "manual"
     };
+    if (mode === "qrcode" && !account.label && !account.id) account.label = "账号凭证";
+    return account;
+  }
+
+  function validateAccountCredential(account = {}, mode = fields.accountCredentialMode?.value || "password") {
+    if (mode === "password" && (!account.username || !account.password)) {
+      throw new Error("账号密码模式需要填写用户名和密码");
+    }
+    if (mode === "qrcode" && !account.qrcode) {
+      throw new Error("账号凭证模式需要填写账号凭证内容");
+    }
+    if (mode === "token" && (!account.deviceId || !account.userToken)) {
+      throw new Error("token/deviceId 模式需要同时填写 deviceId 和 userToken");
+    }
   }
 
   async function saveAccount() {
-    const selected = selectedAccount();
+    const selected = uiState.editingAccountId ? state.accountPool.find((item) => item.id === uiState.editingAccountId) : null;
     if (selected && isCloudAccount(selected)) throw new Error("云端账号只显示脱敏摘要，不能在插件前端修改；请先切换到本地账号或新建本地账号。");
     const account = accountFromForm();
-    if (!account.id && !account.username) throw new Error("请至少填写用户名或账号 ID");
+    validateAccountCredential(account);
+    const existing = state.accountPool.find((item) => item.id === account.id);
+    if (existing && isCloudAccount(existing) && existing.id !== uiState.editingAccountId) throw new Error("云端账号只显示摘要，不能用同 ID 覆盖；请换一个账号 ID");
     const response = await sendRuntime("upsertAccount", { account });
     syncSavedState(response.state || {});
+    closeAccountForm();
     emitFlow("账号池", `已保存 ${account.label || account.username}`, "ok");
   }
 
@@ -1469,8 +1707,6 @@
     const response = await sendRuntime("saveRemoteConfig", {
       remote: {
         baseUrl: fields.remoteBaseUrl.value.trim(),
-        clientToken: fields.remoteClientToken.value.trim(),
-        adminToken: fields.remoteAdminToken.value.trim(),
         accountSourceMode: fields.accountSourceMode?.value || "cloud",
         fixedAccountId: fields.remoteFixedAccountId?.value || state.selectedFullAccountId || "",
         enabled: true,
@@ -1490,12 +1726,15 @@
   }
 
   async function uploadAccountRemote() {
-    const selected = selectedAccount();
+    const selected = uiState.editingAccountId ? state.accountPool.find((item) => item.id === uiState.editingAccountId) : null;
     if (selected && isCloudAccount(selected)) throw new Error("云端账号只显示脱敏摘要，不能直接重复上传；请先在表单中新建本地账号或导入当前会话。");
     const account = accountFromForm();
-    if (!account.id && !account.username) throw new Error("请至少填写用户名或账号 ID");
+    validateAccountCredential(account);
+    const existing = state.accountPool.find((item) => item.id === account.id);
+    if (existing && isCloudAccount(existing) && existing.id !== uiState.editingAccountId) throw new Error("云端已有同 ID 账号，不能重复覆盖；请换一个账号 ID");
     const response = await sendRuntime("uploadAccountToRemote", { account });
     syncSavedState(response.state || {});
+    closeAccountForm();
     emitFlow("远程账号池", `已上传 ${account.label || account.username} 到 Worker，凭据由服务端加密保存`, "ok");
   }
 
@@ -1714,7 +1953,17 @@
       if (action === "verify-account") await verifyAccount(accountId);
       if (action === "show-account-summary") {
         const account = state.accountPool.find((item) => item.id === accountId);
-        emitFlow("云端账号摘要", `${accountTitle(account)} / ${account?.status || "idle"} / ${account?.lastError ? `错误：${account.lastError}` : "凭证明文仅保存在服务端"}`, account?.status === "error" ? "error" : "ok");
+        const status = accountStatusInfo(account);
+        emitFlow("云端账号摘要", `${accountNickname(account)} / ${status.label} / ${status.reason}`, status.ok ? "ok" : "error");
+      }
+      if (action === "open-account-form") openAccountForm();
+      if (action === "close-account-form") closeAccountForm();
+      if (action === "choose-account-type") openAccountForm(null, actionEl.dataset.credentialMode || "password");
+      if (action === "back-account-type") backAccountTypePicker();
+      if (action === "edit-account") {
+        const account = state.accountPool.find((item) => item.id === accountId);
+        if (!account) throw new Error(`未找到账号：${accountId}`);
+        openAccountForm(account);
       }
       if (action === "remove-account") await removeAccount(accountId);
       if (action === "save-account") await saveAccount();
@@ -1767,6 +2016,25 @@
       emitFlow("操作失败", err?.message || String(err), "error");
     }
     event.preventDefault();
+  });
+
+  panel.addEventListener("submit", (event) => {
+    if (event.target.closest(".txzz-account-form")) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  });
+
+  panel.addEventListener("change", (event) => {
+    const field = event.target.closest("[data-field]");
+    if (!field) return;
+    if (field.dataset.field === "showInvalidCloudAccounts") {
+      uiState.showInvalidCloudAccounts = Boolean(field.checked);
+      renderAccounts();
+    }
+    if (field.dataset.field === "accountCredentialMode") {
+      setAccountCredentialMode(field.value || "password");
+    }
   });
 
   function startDrag(event) {

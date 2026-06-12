@@ -754,14 +754,17 @@
   overflow-wrap: anywhere;
 }
 
-#txzz-panel .txzz-account-layout {
+#txzz-panel .txzz-account-console {
   display: grid;
-  grid-template-columns: minmax(260px, 0.9fr) minmax(360px, 1.1fr);
   gap: 10px;
 }
 
-#txzz-panel .txzz-remote-box {
-  margin-bottom: 10px;
+#txzz-panel .txzz-account-topbar,
+#txzz-panel .txzz-account-filter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
   border: 1px solid rgba(255, 211, 106, 0.24);
   border-radius: 8px;
   background:
@@ -770,10 +773,93 @@
   padding: 10px;
 }
 
+#txzz-panel .txzz-account-topbar strong,
+#txzz-panel .txzz-account-filter strong {
+  display: block;
+  color: var(--txzz-gold);
+  font-size: 15px;
+}
+
+#txzz-panel .txzz-account-topbar small,
+#txzz-panel .txzz-account-filter small {
+  display: block;
+  margin-top: 3px;
+  color: var(--txzz-muted);
+  font-size: 12px;
+}
+
+#txzz-panel .txzz-account-top-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+#txzz-panel .txzz-account-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+#txzz-panel .txzz-account-summary article {
+  border: 1px solid var(--txzz-line);
+  border-radius: 8px;
+  background: #0f0d13;
+  padding: 9px;
+}
+
+#txzz-panel .txzz-account-summary span {
+  display: block;
+  color: var(--txzz-muted);
+  font-size: 12px;
+}
+
+#txzz-panel .txzz-account-summary strong {
+  display: block;
+  margin-top: 3px;
+  color: var(--txzz-text);
+  font-size: 18px;
+}
+
+#txzz-panel .txzz-remote-box {
+  border: 1px solid rgba(255, 211, 106, 0.2);
+  border-radius: 8px;
+  background: #0f0d13;
+  padding: 0;
+  overflow: hidden;
+}
+
+#txzz-panel .txzz-remote-box summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  cursor: pointer;
+  padding: 10px;
+  list-style: none;
+}
+
+#txzz-panel .txzz-remote-box summary::-webkit-details-marker {
+  display: none;
+}
+
+#txzz-panel .txzz-remote-box summary span {
+  color: var(--txzz-gold);
+  font-weight: 800;
+}
+
+#txzz-panel .txzz-remote-box summary small {
+  color: var(--txzz-muted);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+  text-align: right;
+}
+
 #txzz-panel .txzz-remote-grid {
   display: grid;
   grid-template-columns: minmax(220px, 1.2fr) minmax(150px, 0.9fr) minmax(150px, 0.9fr);
   gap: 8px;
+  padding: 0 10px 10px;
 }
 
 #txzz-panel .txzz-remote-box label {
@@ -798,7 +884,7 @@
 }
 
 #txzz-panel .txzz-remote-box .txzz-form-actions {
-  margin-top: 8px;
+  padding: 0 10px 10px;
 }
 
 #txzz-panel .txzz-remote-box > small {
@@ -815,7 +901,7 @@
 }
 
 #txzz-panel .txzz-account-pool {
-  height: 390px;
+  max-height: 430px;
   overflow: auto;
   border: 1px solid var(--txzz-line);
   border-radius: 8px;
@@ -823,7 +909,7 @@
   padding: 8px;
 }
 
-#txzz-panel .txzz-account-pool article {
+#txzz-panel .txzz-account-pool article.txzz-account-card {
   border: 1px solid rgba(244, 219, 208, 0.1);
   border-radius: 8px;
   background: #15131b;
@@ -831,50 +917,204 @@
   margin-bottom: 8px;
 }
 
-#txzz-panel .txzz-account-pool article.is-selected {
+#txzz-panel .txzz-account-pool article.txzz-account-card.is-selected {
   border-color: rgba(255, 211, 106, 0.52);
   background: #211923;
 }
 
-#txzz-panel .txzz-account-pool b,
-#txzz-panel .txzz-account-pool span,
-#txzz-panel .txzz-account-pool code,
-#txzz-panel .txzz-account-pool p {
+#txzz-panel .txzz-account-card-main b,
+#txzz-panel .txzz-account-card-main span,
+#txzz-panel .txzz-account-card-main code,
+#txzz-panel .txzz-account-card-main p {
   display: block;
   overflow-wrap: anywhere;
 }
 
-#txzz-panel .txzz-account-pool b {
+#txzz-panel .txzz-account-card-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+#txzz-panel .txzz-account-card-main b {
   color: var(--txzz-gold);
 }
 
-#txzz-panel .txzz-account-pool span,
-#txzz-panel .txzz-account-pool p {
+#txzz-panel .txzz-account-card-main span,
+#txzz-panel .txzz-account-card-main p {
   color: var(--txzz-muted);
   font-size: 12px;
 }
 
-#txzz-panel .txzz-account-pool code {
+#txzz-panel .txzz-account-card-main code {
   margin-top: 3px;
   color: #fff;
   font: 12px/1.35 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
+#txzz-panel .txzz-account-card-title em {
+  flex: none;
+  border-radius: 999px;
+  padding: 3px 7px;
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+#txzz-panel .txzz-status-good {
+  border: 1px solid rgba(91, 214, 138, 0.4);
+  background: rgba(91, 214, 138, 0.12);
+  color: #bdf5d1;
+}
+
+#txzz-panel .txzz-status-warn {
+  border: 1px solid rgba(255, 211, 106, 0.42);
+  background: rgba(255, 211, 106, 0.12);
+  color: #fff1c7;
+}
+
+#txzz-panel .txzz-status-bad {
+  border: 1px solid rgba(255, 107, 107, 0.42);
+  background: rgba(255, 107, 107, 0.12);
+  color: #ffd0d0;
+}
+
 #txzz-panel .txzz-account-actions {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 6px;
   margin-top: 8px;
 }
 
 #txzz-panel .txzz-account-form {
-  display: grid;
+  display: none;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
-  border: 1px solid var(--txzz-line);
+  padding-top: 10px;
+}
+
+#txzz-panel .txzz-account-form.is-open {
+  display: grid;
+}
+
+#txzz-panel .txzz-account-modal[hidden] {
+  display: none;
+}
+
+#txzz-panel .txzz-account-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483646;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+}
+
+#txzz-panel .txzz-account-modal-mask {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+  background: rgba(4, 3, 6, 0.62);
+  backdrop-filter: blur(5px);
+}
+
+#txzz-panel .txzz-account-dialog {
+  position: relative;
+  z-index: 1;
+  width: min(620px, calc(100vw - 28px));
+  max-height: min(720px, calc(100dvh - 28px));
+  overflow: auto;
+  border: 1px solid rgba(255, 211, 106, 0.28);
   border-radius: 8px;
-  background: #0f0d13;
-  padding: 10px;
+  background:
+    linear-gradient(135deg, rgba(255, 211, 106, 0.08), rgba(255, 79, 115, 0.06)),
+    #111018;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+  padding: 12px;
+}
+
+#txzz-panel .txzz-account-type-picker {
+  display: none;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  padding-top: 10px;
+}
+
+#txzz-panel .txzz-account-type-picker.is-active {
+  display: grid;
+}
+
+#txzz-panel .txzz-account-type-picker button {
+  min-height: 118px;
+  border: 1px solid rgba(244, 219, 208, 0.14);
+  border-radius: 8px;
+  background: #15131b;
+  color: var(--txzz-text);
+  text-align: left;
+  padding: 12px;
+}
+
+#txzz-panel .txzz-account-type-picker button:hover {
+  border-color: rgba(255, 211, 106, 0.42);
+  background: #211923;
+}
+
+#txzz-panel .txzz-account-type-picker b,
+#txzz-panel .txzz-account-type-picker span {
+  display: block;
+}
+
+#txzz-panel .txzz-account-type-picker b {
+  color: var(--txzz-gold);
+  font-size: 14px;
+}
+
+#txzz-panel .txzz-account-type-picker span {
+  margin-top: 8px;
+  color: var(--txzz-muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+#txzz-panel .txzz-selected-type {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border: 1px solid rgba(255, 211, 106, 0.18);
+  border-radius: 8px;
+  background: rgba(255, 211, 106, 0.06);
+  padding: 8px;
+}
+
+#txzz-panel .txzz-selected-type span {
+  color: var(--txzz-gold);
+  font-weight: 800;
+}
+
+#txzz-panel .txzz-form-title {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border-bottom: 1px solid var(--txzz-line);
+  padding-bottom: 8px;
+}
+
+#txzz-panel .txzz-form-title strong {
+  display: block;
+  color: var(--txzz-gold);
+}
+
+#txzz-panel .txzz-form-title small {
+  color: var(--txzz-muted);
+  font-size: 12px;
 }
 
 #txzz-panel .txzz-account-form label {
@@ -883,7 +1123,8 @@
 }
 
 #txzz-panel .txzz-account-form input,
-#txzz-panel .txzz-account-form textarea {
+#txzz-panel .txzz-account-form textarea,
+#txzz-panel .txzz-account-form select {
   width: 100%;
   min-height: 36px;
   margin-top: 5px;
@@ -910,6 +1151,21 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
+}
+
+#txzz-panel .txzz-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--txzz-text);
+  font-size: 12px;
+  user-select: none;
+}
+
+#txzz-panel .txzz-switch input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--txzz-gold);
 }
 
 @media (max-width: 720px) {
@@ -942,8 +1198,8 @@
   #txzz-panel .txzz-download-actions,
   #txzz-panel .txzz-download-meta,
   #txzz-panel .txzz-compare,
-  #txzz-panel .txzz-account-layout,
   #txzz-panel .txzz-remote-grid,
+  #txzz-panel .txzz-account-summary,
   #txzz-panel .txzz-fullplay-card {
     grid-template-columns: 1fr;
   }
@@ -959,8 +1215,38 @@
   #txzz-panel .txzz-grid,
   #txzz-panel .txzz-download-stats,
   #txzz-panel .txzz-download-actions,
+  #txzz-panel .txzz-account-summary,
   #txzz-panel .txzz-tools {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #txzz-panel .txzz-account-topbar,
+  #txzz-panel .txzz-account-filter,
+  #txzz-panel .txzz-remote-box summary,
+  #txzz-panel .txzz-form-title {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  #txzz-panel .txzz-account-top-actions {
+    justify-content: stretch;
+  }
+
+  #txzz-panel .txzz-account-top-actions button {
+    flex: 1 1 120px;
+  }
+
+  #txzz-panel .txzz-account-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #txzz-panel .txzz-account-type-picker {
+    grid-template-columns: 1fr;
+  }
+
+  #txzz-panel .txzz-account-dialog {
+    width: calc(var(--txzz-vvw, 100vw) - 24px);
+    max-height: calc(var(--txzz-vvh, 100dvh) - 24px);
   }
 
   #txzz-panel .txzz-tabs {
@@ -992,7 +1278,7 @@
   }
 
   #txzz-panel .txzz-account-pool {
-    height: 260px;
+    max-height: 300px;
   }
 
   #txzz-panel .txzz-download-list {
@@ -1007,10 +1293,18 @@
   #txzz-panel .txzz-download-actions,
   #txzz-panel .txzz-download-meta,
   #txzz-panel .txzz-tools,
+  #txzz-panel .txzz-account-summary,
   #txzz-panel .txzz-account-form,
   #txzz-panel .txzz-remote-grid,
-  #txzz-panel .txzz-form-actions {
+  #txzz-panel .txzz-form-actions,
+  #txzz-panel .txzz-account-actions,
+  #txzz-panel .txzz-selected-type {
     grid-template-columns: 1fr;
+  }
+
+  #txzz-panel .txzz-selected-type {
+    align-items: stretch;
+    flex-direction: column;
   }
 
   #txzz-panel .txzz-brand small {

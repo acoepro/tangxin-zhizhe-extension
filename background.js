@@ -188,6 +188,9 @@ function slug(value) {
 function normalizeAccount(raw = {}) {
   const username = String(raw.username || raw.account_name || "").trim();
   const id = String(raw.id || (username ? `full-${slug(username)}` : `full-${Date.now()}`));
+  const hasPassword = raw.hasPassword !== undefined ? Boolean(raw.hasPassword) : Boolean(raw.password);
+  const hasQrcode = raw.hasQrcode !== undefined ? Boolean(raw.hasQrcode) : Boolean(raw.qrcode);
+  const hasToken = raw.hasToken !== undefined ? Boolean(raw.hasToken) : Boolean(raw.userToken || raw.token);
   return {
     id,
     label: String(raw.label || username || id || "完整权限账号").trim(),
@@ -203,7 +206,13 @@ function normalizeAccount(raw = {}) {
     userInfo: raw.userInfo || null,
     lastVerifiedAt: raw.lastVerifiedAt || "",
     lastError: raw.lastError || "",
-    status: raw.status || "idle"
+    status: raw.status || "idle",
+    hasPassword,
+    hasQrcode,
+    hasToken,
+    passwordMasked: raw.passwordMasked || (hasPassword ? "********" : ""),
+    qrcodeMasked: raw.qrcodeMasked || "",
+    tokenMasked: raw.tokenMasked || ""
   };
 }
 
@@ -214,12 +223,12 @@ function publicAccount(account) {
     password: "",
     qrcode: "",
     userToken: "",
-    hasPassword: Boolean(item.password),
-    hasQrcode: Boolean(item.qrcode),
-    hasToken: Boolean(item.userToken),
-    passwordMasked: item.password ? "********" : "",
-    qrcodeMasked: item.qrcode ? mask(item.qrcode, 8, 6) : "",
-    tokenMasked: item.userToken ? mask(item.userToken, 12, 8) : "",
+    hasPassword: Boolean(item.hasPassword || item.password),
+    hasQrcode: Boolean(item.hasQrcode || item.qrcode),
+    hasToken: Boolean(item.hasToken || item.userToken),
+    passwordMasked: item.passwordMasked || (item.password ? "********" : ""),
+    qrcodeMasked: item.qrcodeMasked || (item.qrcode ? mask(item.qrcode, 8, 6) : ""),
+    tokenMasked: item.tokenMasked || (item.userToken ? mask(item.userToken, 12, 8) : ""),
     userInfo: summarizeUserInfo(item.userInfo)
   };
 }
@@ -1326,10 +1335,9 @@ async function upsertAccount(raw) {
 async function uploadAccountToRemote(raw) {
   const state = await getStateInternal();
   const account = normalizeAccount(raw);
-  const response = await remoteRequest(state, "/v1/accounts", {
+  const response = await remoteRequest(state, "/v1/accounts/client-upload", {
     method: "POST",
-    admin: true,
-    body: JSON.stringify({ account })
+    body: JSON.stringify({ account: { ...account, source: account.qrcode ? "qrcode" : "remote" } })
   });
   const synced = await syncRemoteAccounts(await getStateInternal());
   return { ok: true, account: response.account, state: sanitizeState(synced) };
