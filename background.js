@@ -7,7 +7,7 @@ const API_CONFIG = {
   aesKey: "fd14f9f8e38808fa"
 };
 
-const STORAGE_SCHEMA_VERSION = "2026-06-09-custom-domain-v1";
+const STORAGE_SCHEMA_VERSION = "2026-06-13-cloud-readonly-v1";
 const LEGACY_REMOTE_BASE_URLS = [
   "https://txzz.lsy20.top",
   "https://txzz-secure-pool.3199912548.workers.dev"
@@ -15,8 +15,6 @@ const LEGACY_REMOTE_BASE_URLS = [
 
 const REMOTE_CONFIG = {
   baseUrl: "https://txzzsecure.lsy20.top",
-  clientToken: "txzz_client_91ee115d9bf5c8e800f2def383f9da71d449fb2a11ccba455c9abb7c590701f2",
-  adminToken: "",
   enabled: true,
   accountSourceMode: "cloud",
   fallbackLocal: true
@@ -25,7 +23,7 @@ const REMOTE_CONFIG = {
 const DEFAULT_ACCOUNTS = [
   {
     id: "full-lsyhook",
-    label: "lsyhook 完整权限",
+    label: "lsyhook 账号池",
     username: "lsyhook",
     password: "",
     role: "full",
@@ -34,7 +32,7 @@ const DEFAULT_ACCOUNTS = [
     deviceId: "",
     userToken: "",
     qrcode: "",
-    notes: "远程完整权限种子账号"
+    notes: "远程账号池种子账号"
   }
 ];
 
@@ -159,6 +157,66 @@ function accountName(info) {
   return String(info?.account_name || info?.username || info?.nickname || "");
 }
 
+function firstFilled(source = {}, keys = []) {
+  for (const key of keys) {
+    const value = source?.[key];
+    if (value !== undefined && value !== null && String(value).trim() !== "") return value;
+  }
+  return "";
+}
+
+function toFiniteNumber(value) {
+  const raw = String(value ?? "").replace(/,/g, "").trim();
+  if (!raw) return null;
+  const n = Number.parseFloat(raw.replace(/[^\d.-]/g, ""));
+  return Number.isFinite(n) ? n : null;
+}
+
+function coinValueFromInfo(info = {}) {
+  const value = firstFilled(info, ["coin", "gold", "balance", "balance_income", "money", "amount", "wallet", "ticket"]);
+  return toFiniteNumber(value);
+}
+
+function accountCoinValue(account = {}, fallback = Number.POSITIVE_INFINITY) {
+  const value = coinValueFromInfo(account.userInfo || account.user_info || {});
+  return value === null ? fallback : value;
+}
+
+function compareByCoinThenName(a, b) {
+  const av = accountCoinValue(a);
+  const bv = accountCoinValue(b);
+  if (av !== bv) return av - bv;
+  return String(a.label || a.username || a.id || "").localeCompare(String(b.label || b.username || b.id || ""), "zh-CN");
+}
+
+function sortAccountsByCoin(rows = []) {
+  return [...rows].sort(compareByCoinThenName);
+}
+
+function shuffle(items) {
+  const out = [...items];
+  for (let i = out.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+
+function lowestCoinRandomOrder(rows = []) {
+  const remaining = [...rows];
+  const out = [];
+  while (remaining.length) {
+    const minCoin = Math.min(...remaining.map((row) => accountCoinValue(row)));
+    const group = shuffle(remaining.filter((row) => accountCoinValue(row) === minCoin));
+    out.push(...group);
+    for (const row of group) {
+      const index = remaining.findIndex((item) => item.id === row.id);
+      if (index >= 0) remaining.splice(index, 1);
+    }
+  }
+  return out;
+}
+
 function summarizeUserInfo(info) {
   if (!info) return null;
   return {
@@ -168,8 +226,19 @@ function summarizeUserInfo(info) {
     nickname: info.nickname,
     balance: info.balance,
     balance_income: info.balance_income,
+    coin: info.coin,
+    gold: info.gold,
+    money: info.money,
+    amount: info.amount,
+    wallet: info.wallet,
     is_vip: info.is_vip,
     is_dark_vip: info.is_dark_vip,
+    vip: info.vip,
+    dark_vip: info.dark_vip,
+    has_vip: info.has_vip,
+    has_dark_vip: info.has_dark_vip,
+    vip_end_time: info.vip_end_time,
+    dark_vip_end_time: info.dark_vip_end_time,
     group_name: info.group_name,
     group_end_time: info.group_end_time,
     ticket: info.ticket
@@ -191,19 +260,22 @@ function normalizeAccount(raw = {}) {
   const hasPassword = raw.hasPassword !== undefined ? Boolean(raw.hasPassword) : Boolean(raw.password);
   const hasQrcode = raw.hasQrcode !== undefined ? Boolean(raw.hasQrcode) : Boolean(raw.qrcode);
   const hasToken = raw.hasToken !== undefined ? Boolean(raw.hasToken) : Boolean(raw.userToken || raw.token);
+  const source = String(raw.source || (raw.cloudReadonly || raw.isCloud || raw.remoteId || raw.cloudId ? "remote" : "manual"));
   return {
     id,
-    label: String(raw.label || username || id || "完整权限账号").trim(),
+    label: String(raw.label || username || id || "账号池账号").trim(),
     username,
     password: String(raw.password || ""),
     qrcode: String(raw.qrcode || ""),
     role: "full",
     enabled: raw.enabled !== false,
-    source: String(raw.source || "manual"),
+    source,
+    cloudReadonly: Boolean(raw.cloudReadonly || raw.isCloud || raw.remoteId || raw.cloudId || ["remote", "qrcode", "remote-seed", "seed"].includes(source)),
+    remoteId: String(raw.remoteId || raw.cloudId || ""),
     deviceId: String(raw.deviceId || ""),
     userToken: String(raw.userToken || raw.token || ""),
     notes: String(raw.notes || ""),
-    userInfo: raw.userInfo || null,
+    userInfo: raw.userInfo || raw.user_info || null,
     lastVerifiedAt: raw.lastVerifiedAt || "",
     lastError: raw.lastError || "",
     status: raw.status || "idle",
@@ -234,18 +306,25 @@ function publicAccount(account) {
 }
 
 function normalizeRemoteConfig(remote = {}) {
-  const mode = ["cloud", "cloud-fixed", "local", "cloud-first"].includes(remote?.accountSourceMode)
+  const mode = ["cloud", "local", "cloud-first"].includes(remote?.accountSourceMode)
     ? remote.accountSourceMode
     : REMOTE_CONFIG.accountSourceMode;
+  const cleanRemote = { ...(remote || {}) };
+  const legacyRemoteKeys = ["client", "admin"].flatMap((name) => [
+    `${name}Token`,
+    `has${name[0].toUpperCase()}${name.slice(1)}Token`,
+    `${name}TokenMasked`
+  ]);
+  for (const key of legacyRemoteKeys) {
+    delete cleanRemote[key];
+  }
   return {
     ...REMOTE_CONFIG,
-    ...(remote || {}),
+    ...cleanRemote,
     baseUrl: String(remote?.baseUrl || REMOTE_CONFIG.baseUrl || "").replace(/\/+$/, ""),
-    clientToken: String(remote?.clientToken || REMOTE_CONFIG.clientToken || ""),
-    adminToken: String(remote?.adminToken || REMOTE_CONFIG.adminToken || ""),
     enabled: remote?.enabled !== false,
     accountSourceMode: mode,
-    fixedAccountId: String(remote?.fixedAccountId || ""),
+    fixedAccountId: "",
     fallbackLocal: remote?.fallbackLocal !== false
   };
 }
@@ -261,7 +340,8 @@ function isLegacyRemoteBaseUrl(value) {
 
 function isRemoteAccount(account = {}) {
   const source = String(account.source || "");
-  return source === "remote" || source === "qrcode" || source === "remote-seed";
+  return Boolean(account.cloudReadonly || account.isCloud || account.remoteId || account.cloudId)
+    || source === "remote" || source === "qrcode" || source === "remote-seed";
 }
 
 function isCloudAccount(account = {}) {
@@ -290,7 +370,6 @@ function buildAutoCleanState(storedState = {}) {
     accountPool: Array.from(accountMap.values()),
     remote: {
       ...REMOTE_CONFIG,
-      adminToken: previousRemote.adminToken || "",
       accountSourceMode: REMOTE_CONFIG.accountSourceMode,
       fixedAccountId: "",
       fallbackLocal: true,
@@ -323,30 +402,16 @@ function publicRemoteConfig(remote = {}) {
   const normalized = normalizeRemoteConfig(remote);
   return {
     ...normalized,
-    clientToken: "",
-    adminToken: "",
-    hasClientToken: Boolean(normalized.clientToken),
-    hasAdminToken: Boolean(normalized.adminToken),
-    clientTokenMasked: normalized.clientToken ? mask(normalized.clientToken, 8, 4) : "",
-    adminTokenMasked: normalized.adminToken ? mask(normalized.adminToken, 8, 4) : ""
   };
-}
-
-function remoteHeaders(remote, admin = false) {
-  const headers = { "Content-Type": "application/json" };
-  if (remote.clientToken) headers["X-TXZZ-Client-Token"] = remote.clientToken;
-  if (admin && remote.adminToken) headers["X-TXZZ-Admin-Token"] = remote.adminToken;
-  return headers;
 }
 
 async function remoteRequest(state, endpoint, options = {}) {
   const remote = normalizeRemoteConfig(state.remote);
   if (!remote.enabled || !remote.baseUrl) throw new Error("remote worker is not configured");
-  const { admin, ...fetchOptions } = options;
   const res = await fetch(`${remote.baseUrl}${endpoint}`, {
-    ...fetchOptions,
+    ...options,
     headers: {
-      ...remoteHeaders(remote, Boolean(admin)),
+      "Content-Type": "application/json",
       ...(options.headers || {})
     }
   });
@@ -376,15 +441,17 @@ async function syncRemoteAccounts(state) {
         }
       }
       for (const account of data.accounts) {
-        merged.set(account.id, normalizeAccount({ ...account, source: account.source || "remote" }));
+        merged.set(account.id, normalizeAccount({
+          ...account,
+          source: account.source || "remote",
+          cloudReadonly: true,
+          remoteId: account.remoteId || account.id
+        }));
       }
       state.accountPool = Array.from(merged.values());
       state.remote.lastSyncAt = nowIso();
       state.remote.lastError = "";
-      const fixedId = state.remote.fixedAccountId || "";
-      if (state.remote.accountSourceMode === "cloud-fixed" && fixedId && state.accountPool.some((item) => item.id === fixedId)) {
-        state.selectedFullAccountId = fixedId;
-      } else if (!state.selectedFullAccountId || !state.accountPool.some((item) => item.id === state.selectedFullAccountId) || !isHealthyAccount(state.accountPool.find((item) => item.id === state.selectedFullAccountId))) {
+      if (!state.selectedFullAccountId || !state.accountPool.some((item) => item.id === state.selectedFullAccountId) || !isHealthyAccount(state.accountPool.find((item) => item.id === state.selectedFullAccountId))) {
         const healthy = data.accounts.find(isHealthyAccount) || state.accountPool.find(isHealthyAccount);
         state.selectedFullAccountId = healthy?.id || data.accounts[0]?.id || state.accountPool[0]?.id || "";
       }
@@ -653,6 +720,20 @@ async function updateAccountSession(accountId, bootstrapSession = null) {
   const index = state.accountPool.findIndex((item) => item.id === accountId);
   if (index < 0) throw new Error(`未找到账号：${accountId}`);
   const account = normalizeAccount(state.accountPool[index]);
+  if (isCloudAccount(account)) {
+    try {
+      const response = await remoteRequest(state, "/v1/accounts/verify", {
+        method: "POST",
+        body: JSON.stringify({ accountId: account.id, bootstrapSession })
+      });
+      const synced = await syncRemoteAccounts(await getStateInternal());
+      return { state: sanitizeState(synced), account: response.account, session: response.session || null };
+    } catch (err) {
+      state.accountPool[index] = { ...account, lastError: err?.message || String(err), status: "error" };
+      await saveState(state);
+      throw err;
+    }
+  }
   try {
     const session = await acquireAccountSession(account, bootstrapSession);
     state.accountPool[index] = {
@@ -725,7 +806,7 @@ function displayMovieTitle(detail = {}, summary = {}, fallback = "") {
 
 function downloadTitleSnippet(title = "", movieId = "") {
   const clean = String(title || "").replace(/\s+/g, " ").trim();
-  if (!clean) return `完整视频_${movieId || Date.now()}`;
+  if (!clean) return `视频_${movieId || Date.now()}`;
   return clean.length > 14 ? clean.slice(0, 14) : clean;
 }
 
@@ -864,6 +945,16 @@ function normalizeFullDetailResponse(response = {}) {
   };
 }
 
+function playableDetailReady(detail = null) {
+  const normalized = normalizeFullDetail(detail);
+  return Boolean(looksPlayableLink(normalized?.play_link) || looksPlayableLink(normalized?.backup_link));
+}
+
+function isLockedCoinVideo(detail = null) {
+  const normalized = normalizeFullDetail(detail);
+  return normalized?.has_buy !== "y" && normalized?.layer_type === "money" && Number(normalized?.money || 0) > 0;
+}
+
 async function statM3u8(link) {
   if (!link) return null;
   const url = absoluteUrl(link);
@@ -922,7 +1013,7 @@ async function getFullDetail(message = {}) {
           movieId,
           visitorDetail,
           accountMode: sourceMode,
-          accountId: sourceMode === "cloud-fixed" ? (remote.fixedAccountId || state.selectedFullAccountId || "") : "",
+          accountId: "",
           bootstrapSession: message.bootstrapSession || message.session || null
         })
       }));
@@ -942,7 +1033,7 @@ async function getFullDetail(message = {}) {
   }
   const cacheKey = `${message.accountId || state.selectedFullAccountId || "default"}:${movieId}`;
   const cached = state.fullDetailCache?.[cacheKey];
-  if (cached?.detail && Date.now() - Number(cached.cachedAt || 0) < 10 * 60 * 1000) {
+  if (cached?.detail && playableDetailReady(cached.detail) && Date.now() - Number(cached.cachedAt || 0) < 10 * 60 * 1000) {
     return {
       ok: true,
       detail: cached.detail,
@@ -952,40 +1043,81 @@ async function getFullDetail(message = {}) {
       state: sanitizeState(state)
     };
   }
-  let account = state.accountPool.find((item) => item.id === (message.accountId || state.selectedFullAccountId));
-  if (!account) account = state.accountPool[0];
-  if (!account) {
-    if (remoteError) throw new Error(`远程账号池失败：${remoteError?.message || remoteError}；本地账号池为空，无法获取完整详情`);
-    throw new Error("账号池为空，无法获取完整详情");
+  if (visitorDetail?.__txzzFixture) {
+    const detail = fixtureFullDetail(movieId);
+    const account = { id: "fixture-full", label: "fixture-full", username: "fixture-full" };
+    const session = { deviceId: "fixture-device", userToken: "fixture-token_1001", userInfo: { username: "fixture-full" } };
+    return await finishLocalFullDetail({ state, movieId, detail, account, session, action: "fixture_full_detail", fixtureMode: true, cacheKey });
   }
 
-  let detail = null;
-  let action = "direct_full_detail";
-  let session = null;
-  let fixtureMode = false;
+  const localAccounts = sortAccountsByCoin((state.accountPool || []).filter((item) => !isCloudAccount(item) && isHealthyAccount(item)));
+  const selectedLocal = localAccounts.find((item) => item.id === (message.accountId || state.selectedFullAccountId));
+  const candidates = selectedLocal ? [selectedLocal, ...localAccounts.filter((item) => item.id !== selectedLocal.id)] : localAccounts;
+  if (!candidates.length) {
+    if (remoteError) throw new Error(`远程账号池失败：${remoteError?.message || remoteError}；本地账号池为空，无法获取播放详情`);
+    throw new Error("账号池为空，无法获取播放详情");
+  }
 
-  try {
-    if (visitorDetail?.__txzzFixture) {
-      detail = fixtureFullDetail(movieId);
-      session = { deviceId: "fixture-device", userToken: "fixture-token_1001", userInfo: { username: "fixture-full" } };
-      action = "fixture_full_detail";
-      fixtureMode = true;
-    } else {
-      const verified = await updateAccountSession(account.id, message.bootstrapSession || message.session || null);
-      session = verified.session;
-      account = state.accountPool.find((item) => item.id === account.id) || account;
-      detail = normalizeFullDetail(await apiRequest("/movie/detail", { id: movieId }, session));
-      if (detail?.has_buy !== "y" && detail?.layer_type === "money" && Number(detail?.money || 0) > 0) {
-        action = "buy_then_full_detail";
-        await apiRequest("/movie/doBuy", { id: movieId }, session);
-        detail = normalizeFullDetail(await apiRequest("/movie/detail", { id: movieId }, session));
+  const errors = [];
+  const lockedCandidates = [];
+  const checkedAccountIds = new Set();
+  for (const candidate of candidates) {
+    try {
+      const verified = await updateAccountSession(candidate.id, message.bootstrapSession || message.session || null);
+      const latest = await getStateInternal();
+      const account = latest.accountPool.find((item) => item.id === candidate.id) || candidate;
+      const session = verified.session;
+      const detail = normalizeFullDetail(await apiRequest("/movie/detail", { id: movieId }, session));
+      checkedAccountIds.add(candidate.id);
+      if (isLockedCoinVideo(detail)) {
+        lockedCandidates.push({ account, session, detail });
+        continue;
+      }
+      if (!playableDetailReady(detail)) throw new Error("播放详情未返回可播放链接");
+      return await finishLocalFullDetail({ state: latest, movieId, detail, account, session, action: "direct_full_detail", cacheKey, errors, checkedAccountIds });
+    } catch (err) {
+      errors.push({ accountId: candidate.id, label: candidate.label, error: err?.message || String(err) });
+    }
+  }
+  if (lockedCandidates.length) {
+    for (const item of lowestCoinRandomOrder(lockedCandidates.map((entry) => entry.account))
+      .map((account) => lockedCandidates.find((entry) => entry.account.id === account.id))
+      .filter(Boolean)) {
+      try {
+        await apiRequest("/movie/doBuy", { id: movieId }, item.session);
+        const detail = normalizeFullDetail(await apiRequest("/movie/detail", { id: movieId }, item.session));
+        if (isLockedCoinVideo(detail)) throw new Error("购买后仍显示未购买");
+        if (!playableDetailReady(detail)) throw new Error("购买后播放详情未返回可播放链接");
+        const latest = await getStateInternal();
+        const account = latest.accountPool.find((entry) => entry.id === item.account.id) || item.account;
+        return await finishLocalFullDetail({
+          state: latest,
+          movieId,
+          detail,
+          account,
+          session: item.session,
+          action: "buy_then_full_detail",
+          cacheKey,
+          errors,
+          checkedAccountIds,
+          purchaseMeta: {
+            purchasePolicy: "all_accounts_checked_then_lowest_coin",
+            purchasedByCoin: accountCoinValue(account, null),
+            lockedAccounts: lockedCandidates.length
+          }
+        });
+      } catch (err) {
+        errors.push({ accountId: item.account.id, label: item.account.label, error: err?.message || String(err), stage: "buy" });
       }
     }
-  } catch (err) {
-    if (remoteError) throw new Error(`远程账号池失败：${remoteError?.message || remoteError}；本地兜底失败：${err?.message || err}`);
-    throw err;
   }
+  const messageText = `本地账号池全部失败：${JSON.stringify(errors.slice(-8))}`;
+  if (remoteError) throw new Error(`远程账号池失败：${remoteError?.message || remoteError}；${messageText}`);
+  throw new Error(messageText);
+}
 
+async function finishLocalFullDetail(options = {}) {
+  const { state, movieId, detail, account, session, action, fixtureMode = false, cacheKey, errors = [], checkedAccountIds = new Set(), purchaseMeta = {} } = options;
   const [fullStat, backupStat] = fixtureMode
     ? [
         { url: absoluteUrl(detail?.play_link), status: 200, segments: 3, duration: 28.5 },
@@ -1010,14 +1142,21 @@ async function getFullDetail(message = {}) {
     backupLink: detail?.backup_link,
     fullStat,
     backupStat,
-    fetchedAt: nowIso()
+    fetchedAt: nowIso(),
+    rotation: {
+      accountId: account.id,
+      tried: checkedAccountIds.size || errors.length + 1,
+      failed: errors,
+      coinSort: true,
+      ...purchaseMeta
+    }
   };
-
   const fresh = await getStateInternal();
+  fresh.selectedFullAccountId = account.id || fresh.selectedFullAccountId;
   fresh.fullDetails = [...(fresh.fullDetails || []), summary].slice(-80);
   fresh.fullDetailCache = {
     ...(fresh.fullDetailCache || {}),
-    [cacheKey]: {
+    [cacheKey || `${account.id || "default"}:${movieId}`]: {
       cachedAt: Date.now(),
       detail,
       summary,
@@ -1049,7 +1188,7 @@ async function downloadFullVideo(message = {}) {
   const detail = normalizeFullDetail(full.detail || full.data || {});
   const summary = full.summary || {};
   const link = detail.play_link || summary.playLink || detail.backup_link || summary.backupLink || "";
-  if (!link) throw new Error("完整详情没有返回可下载播放链接");
+  if (!link) throw new Error("播放详情没有返回可下载播放链接");
   const url = absoluteUrl(link);
   const ext = linkExtension(url);
   const title = displayMovieTitle(detail, summary, message.title || message.movieTitle || "");
@@ -1118,7 +1257,7 @@ async function downloadFullVideo(message = {}) {
     filename,
     saveAs: false
   }).then(async (result) => {
-    if (result?.ok === false) throw new Error(result.error || "完整视频下载失败");
+    if (result?.ok === false) throw new Error(result.error || "视频下载失败");
     if (result?.started) return;
   }).catch(async (err) => {
     const failed = await getStateInternal();
@@ -1339,7 +1478,12 @@ async function uploadAccountToRemote(raw) {
     method: "POST",
     body: JSON.stringify({ account: { ...account, source: account.qrcode ? "qrcode" : "remote" } })
   });
-  const synced = await syncRemoteAccounts(await getStateInternal());
+  const localState = await getStateInternal();
+  localState.accountPool = (localState.accountPool || []).map((item) => item.id === account.id
+    ? normalizeAccount({ ...(response.account || account), source: response.account?.source || (account.qrcode ? "qrcode" : "remote"), cloudReadonly: true, remoteId: account.id })
+    : item);
+  await saveState(localState);
+  const synced = await syncRemoteAccounts(localState);
   return { ok: true, account: response.account, state: sanitizeState(synced) };
 }
 
@@ -1355,7 +1499,11 @@ async function uploadLocalAccountToRemote(accountId = "") {
     method: "POST",
     body: JSON.stringify({ account: { ...account, source: account.qrcode ? "qrcode" : "remote" } })
   });
-  const synced = await syncRemoteAccounts(await getStateInternal());
+  state.accountPool = (state.accountPool || []).map((item) => item.id === account.id
+    ? normalizeAccount({ ...(response.account || account), source: response.account?.source || (account.qrcode ? "qrcode" : "remote"), cloudReadonly: true, remoteId: account.id })
+    : item);
+  await saveState(state);
+  const synced = await syncRemoteAccounts(state);
   return { ok: true, account: response.account, state: sanitizeState(synced) };
 }
 
@@ -1363,9 +1511,7 @@ async function saveRemoteConfig(remote = {}) {
   const state = await getStateInternal();
   const incoming = normalizeRemoteConfig({
     ...state.remote,
-    ...remote,
-    clientToken: remote.clientToken || state.remote?.clientToken || "",
-    adminToken: remote.adminToken || state.remote?.adminToken || ""
+    ...remote
   });
   state.remote = incoming;
   await saveState(state);
@@ -1393,7 +1539,9 @@ async function importAccountSession(session = {}, label = "") {
 
 async function selectAccount(accountId) {
   const state = await getStateInternal();
-  if (!state.accountPool.some((item) => item.id === accountId)) throw new Error(`未找到账号：${accountId}`);
+  const account = state.accountPool.find((item) => item.id === accountId);
+  if (!account) throw new Error(`未找到账号：${accountId}`);
+  if (isCloudAccount(account)) throw new Error("云端账号由系统自动轮换，不支持手动固定选择");
   state.selectedFullAccountId = accountId;
   await saveState(state);
   return { ok: true, state: sanitizeState(state) };

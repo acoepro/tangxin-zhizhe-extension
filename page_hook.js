@@ -58,7 +58,7 @@
     patchRuns: [],
     pending: new Map(),
     cache: new Map(),
-    lastMessage: "糖心志者完整播放 Hook 已安装"
+    lastMessage: "糖心志者播放资源监听已安装"
   };
 
   function now() {
@@ -374,7 +374,7 @@
     return new Promise((resolve, reject) => {
       const timer = window.setTimeout(() => {
         fullplay.pending.delete(requestId);
-        reject(new Error(`完整详情请求超时：${movieId}`));
+        reject(new Error(`播放详情请求超时：${movieId}`));
       }, 15000);
       fullplay.pending.set(requestId, { resolve, reject, timer });
       emit("full-detail-request", {
@@ -400,8 +400,8 @@
       fullplay.hits = [];
       fullplay.errors = [];
       fullplay.patchRuns = [];
-      setMessage("插件数据缓存已清除，请刷新页面后继续测试", "ok");
-      emit("fullplay-status", { message: "页面 Hook 运行缓存已清除", level: "ok" });
+      setMessage("插件数据缓存已清除，请刷新页面后继续使用", "ok");
+      emit("fullplay-status", { message: "页面监听运行缓存已清除", level: "ok" });
       return;
     }
     if (event.data?.kind !== "full-detail-response") return;
@@ -416,14 +416,14 @@
       if (cachedMovieId) fullplay.cache.set(String(cachedMovieId), payload);
       pending.resolve(payload);
     }
-    else pending.reject(new Error(payload.error || "完整详情请求失败"));
+    else pending.reject(new Error(payload.error || "播放详情请求失败"));
   });
 
   async function maybeReplaceMovieDetail(api, params, visitorDetail) {
     if (!fullplay.enabled || api !== "/movie/detail") return visitorDetail;
     const movieId = getMovieId(params, api);
     if (!movieId) return visitorDetail;
-    setMessage(`命中详情接口，正在获取完整线路：${movieId}`);
+    setMessage(`记录详情接口，正在获取播放资源：${movieId}`);
     emit("fullplay-hit", {
       movieId,
       visitorHasBuy: visitorDetail?.has_buy,
@@ -470,7 +470,7 @@
       fullDuration: summary?.fullStat?.duration || null,
       action: summary?.action || ""
     });
-    setMessage(`完整线路已替换：${movieId}，分片 ${summary?.fullStat?.segments ?? "?"}`, "ok");
+    setMessage(`播放资源已更新：${movieId}，分片 ${summary?.fullStat?.segments ?? "?"}`, "ok");
     emit("fullplay-success", {
       movieId,
       summary,
@@ -521,7 +521,7 @@
         return await maybeReplaceMovieDetail(normalizedApi, params, visitorDetail);
       } catch (error) {
         recordError(error, { api: normalizedApi, params: safeString(params, 300) });
-        setMessage(`完整线路获取失败：${error.message}`, "error");
+        setMessage(`播放资源获取失败：${error.message}`, "error");
         emit("fullplay-status", { api: normalizedApi, movieId: getMovieId(params, api), error: error.message, background: true });
         return visitorDetail;
       }
@@ -717,11 +717,11 @@
     state: fullplay,
     enable() {
       fullplay.enabled = true;
-      setMessage("完整播放 Hook 已开启", "ok");
+      setMessage("播放资源监听已开启", "ok");
     },
     disable() {
       fullplay.enabled = false;
-      setMessage("完整播放 Hook 已关闭");
+      setMessage("播放资源监听已关闭");
     },
     hits() {
       return fullplay.hits.slice();
@@ -740,7 +740,7 @@
       if (typeof request !== "function") {
         const payload = await requestFullDetail(movieId, null);
         const fullDetail = payload.data || payload.detail;
-        if (!fullDetail) throw new Error("完整详情响应为空");
+        if (!fullDetail) throw new Error("播放详情响应为空");
         return {
           ...fullDetail,
           __txzz_fullplay: {

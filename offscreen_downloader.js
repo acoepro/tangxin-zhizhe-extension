@@ -128,11 +128,11 @@ function sleep(ms) {
 }
 
 function baseFileName(filename = "") {
-  return String(filename || "糖心志者完整视频.ts").split(/[\\/]/).filter(Boolean).pop() || "糖心志者完整视频.ts";
+  return String(filename || "糖心志者视频任务.ts").split(/[\\/]/).filter(Boolean).pop() || "糖心志者视频任务.ts";
 }
 
 function replaceExtension(filename = "", ext = "mp4") {
-  const value = String(filename || "糖心志者完整视频").replace(/\.(ts|mp4)$/i, "");
+  const value = String(filename || "糖心志者视频任务").replace(/\.(ts|mp4)$/i, "");
   return `${value}.${ext}`;
 }
 
@@ -184,7 +184,7 @@ async function downloadM3u8(task) {
     const childPlaylist = await (await fetch(best.url)).text();
     parsed = parseM3u8(childPlaylist, best.url);
   }
-  if (!parsed.segments.length) throw new Error("完整播放列表里没有可下载分片");
+  if (!parsed.segments.length) throw new Error("播放列表里没有可下载分片");
   reportProgress(task, "segments", 0, parsed.segments.length, playlistUrl);
   const chunks = new Array(parsed.segments.length);
   const keyCache = new Map();
@@ -207,7 +207,7 @@ async function downloadM3u8(task) {
   let outputBytes = merged;
   let outputFormat = "mp4";
   let outputMime = "video/mp4";
-  let outputFilename = replaceExtension(task.filename || "糖心志者完整视频.mp4", "mp4");
+  let outputFilename = replaceExtension(task.filename || "糖心志者视频任务.mp4", "mp4");
   let transmuxError = "";
   try {
     outputBytes = transmuxTsToMp4(merged);
@@ -215,7 +215,7 @@ async function downloadM3u8(task) {
     outputBytes = merged;
     outputFormat = "ts";
     outputMime = "video/mp2t";
-    outputFilename = replaceExtension(task.filename || "糖心志者完整视频.ts", "ts");
+    outputFilename = replaceExtension(task.filename || "糖心志者视频任务.ts", "ts");
     transmuxError = err?.message || String(err);
   }
   const blob = new Blob([outputBytes], { type: outputMime });

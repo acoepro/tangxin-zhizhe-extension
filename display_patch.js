@@ -213,7 +213,7 @@
       if (anchor?.parentNode) anchor.parentNode.insertBefore(card, anchor.nextSibling);
       else container.insertBefore(card, container.firstChild);
     }
-    card.innerHTML = '<div class="txzz-row"><div><span>账号状态</span><strong>永久会员 · 永久尤物圈</strong><small>糖心志者展示覆盖已应用，当前页面按完整权限展示</small></div><div class="txzz-balance"><span>余额</span><strong>999</strong></div></div>';
+    card.innerHTML = '<div class="txzz-row"><div><span>账号状态</span><strong>永久会员 · 永久尤物圈</strong><small>糖心志者展示覆盖已应用，当前页面按高级账号状态展示</small></div><div class="txzz-balance"><span>余额</span><strong>999</strong></div></div>';
     const pageText = container.innerText || "";
     if (!/永久会员|永久尤物圈/.test(pageText)) {
       const chip = document.createElement("span");
@@ -265,7 +265,7 @@
         const card = document.createElement("section");
         card.id = "txzz-dark-status-card";
         card.dataset.txzzRendered = "1";
-        card.innerHTML = '<span>尤物圈权限</span><strong>永久尤物圈已开通</strong><small>权限弹窗与模糊遮罩已解除，可继续浏览当前列表</small>';
+        card.innerHTML = '<span>尤物圈权益</span><strong>永久尤物圈已开通</strong><small>访问弹窗与模糊遮罩已处理，可继续浏览当前列表</small>';
         const anchor = container.querySelector(".main") || container.firstElementChild;
         if (anchor?.parentNode) anchor.parentNode.insertBefore(card, anchor);
         else container.insertBefore(card, container.firstChild);

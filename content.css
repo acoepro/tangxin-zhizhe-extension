@@ -90,6 +90,83 @@
   color: #ffe8e8;
 }
 
+#txzz-panel .txzz-flow-badge {
+  position: fixed;
+  left: 14px;
+  top: 14px;
+  width: min(320px, calc(100vw - 28px));
+  min-height: 54px;
+  border: 1px solid rgba(255, 211, 106, 0.34);
+  border-radius: 8px;
+  display: none;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    "tag title"
+    "tag detail";
+  align-items: center;
+  gap: 2px 9px;
+  padding: 9px 11px;
+  background: rgba(17, 15, 22, 0.95);
+  color: #fffaf6;
+  box-shadow: 0 16px 38px rgba(0, 0, 0, 0.42);
+  backdrop-filter: blur(10px);
+  pointer-events: none;
+}
+
+#txzz-panel .txzz-flow-badge.is-show {
+  display: grid;
+}
+
+#txzz-panel .txzz-flow-badge span {
+  grid-area: tag;
+  min-width: 46px;
+  border-radius: 999px;
+  padding: 4px 7px;
+  background: rgba(255, 211, 106, 0.12);
+  color: var(--txzz-gold);
+  font-size: 12px;
+  font-weight: 900;
+  text-align: center;
+}
+
+#txzz-panel .txzz-flow-badge strong,
+#txzz-panel .txzz-flow-badge small {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#txzz-panel .txzz-flow-badge strong {
+  grid-area: title;
+  color: #fff;
+  font-size: 14px;
+}
+
+#txzz-panel .txzz-flow-badge small {
+  grid-area: detail;
+  color: var(--txzz-muted);
+  font-size: 12px;
+}
+
+#txzz-panel .txzz-flow-badge.is-ok {
+  border-color: rgba(101, 224, 157, 0.42);
+}
+
+#txzz-panel .txzz-flow-badge.is-ok span {
+  background: rgba(101, 224, 157, 0.12);
+  color: var(--txzz-green);
+}
+
+#txzz-panel .txzz-flow-badge.is-error {
+  border-color: rgba(255, 107, 107, 0.5);
+}
+
+#txzz-panel .txzz-flow-badge.is-error span {
+  background: rgba(255, 107, 107, 0.14);
+  color: #ffd0d0;
+}
+
 #txzz-panel .txzz-shell {
   position: fixed;
   left: var(--txzz-left, 50%);
@@ -195,6 +272,10 @@
   padding: 0;
   position: relative;
   z-index: 25;
+}
+
+#txzz-panel .txzz-head-actions .txzz-about-btn {
+  width: 46px;
 }
 
 #txzz-panel .txzz-main {
@@ -922,6 +1003,21 @@
   background: #211923;
 }
 
+#txzz-panel .txzz-account-pool article.txzz-account-card.is-cloud {
+  border-color: rgba(255, 211, 106, 0.18);
+  background:
+    linear-gradient(135deg, rgba(255, 211, 106, 0.055), rgba(255, 85, 118, 0.045)),
+    #15131b;
+}
+
+#txzz-panel .txzz-account-pool article.txzz-account-card.is-active-cloud {
+  border-color: rgba(101, 224, 157, 0.48);
+  background:
+    linear-gradient(135deg, rgba(101, 224, 157, 0.11), rgba(255, 211, 106, 0.06)),
+    #15131b;
+  box-shadow: inset 3px 0 0 rgba(101, 224, 157, 0.86);
+}
+
 #txzz-panel .txzz-account-card-main b,
 #txzz-panel .txzz-account-card-main span,
 #txzz-panel .txzz-account-card-main code,
@@ -937,6 +1033,13 @@
   gap: 8px;
 }
 
+#txzz-panel .txzz-account-badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 5px;
+}
+
 #txzz-panel .txzz-account-card-main b {
   color: var(--txzz-gold);
 }
@@ -945,6 +1048,71 @@
 #txzz-panel .txzz-account-card-main p {
   color: var(--txzz-muted);
   font-size: 12px;
+}
+
+#txzz-panel .txzz-account-rights {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  margin: 8px 0 6px;
+}
+
+#txzz-panel .txzz-account-rights span {
+  display: block;
+  min-width: 0;
+  border: 1px solid rgba(244, 219, 208, 0.12);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.035);
+  padding: 6px 7px;
+}
+
+#txzz-panel .txzz-account-rights i,
+#txzz-panel .txzz-account-rights b {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-style: normal;
+}
+
+#txzz-panel .txzz-account-rights i {
+  color: var(--txzz-muted);
+  font-size: 11px;
+  line-height: 1.2;
+}
+
+#txzz-panel .txzz-account-rights b {
+  margin-top: 3px;
+  color: var(--txzz-text);
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+#txzz-panel .txzz-account-rights .txzz-right-good {
+  border-color: rgba(91, 214, 138, 0.3);
+  background: rgba(91, 214, 138, 0.08);
+}
+
+#txzz-panel .txzz-account-rights .txzz-right-good b {
+  color: #bdf5d1;
+}
+
+#txzz-panel .txzz-account-rights .txzz-right-warn {
+  border-color: rgba(255, 211, 106, 0.32);
+  background: rgba(255, 211, 106, 0.08);
+}
+
+#txzz-panel .txzz-account-rights .txzz-right-warn b {
+  color: #fff1c7;
+}
+
+#txzz-panel .txzz-account-rights .txzz-right-bad {
+  border-color: rgba(255, 107, 107, 0.32);
+  background: rgba(255, 107, 107, 0.08);
+}
+
+#txzz-panel .txzz-account-rights .txzz-right-bad b {
+  color: #ffd0d0;
 }
 
 #txzz-panel .txzz-account-card-main code {
@@ -978,6 +1146,18 @@
   border: 1px solid rgba(255, 107, 107, 0.42);
   background: rgba(255, 107, 107, 0.12);
   color: #ffd0d0;
+}
+
+#txzz-panel .txzz-status-cloud {
+  border: 1px solid rgba(255, 211, 106, 0.36);
+  background: rgba(255, 211, 106, 0.12);
+  color: #fff1c7;
+}
+
+#txzz-panel .txzz-status-running {
+  border: 1px solid rgba(101, 224, 157, 0.4);
+  background: rgba(101, 224, 157, 0.12);
+  color: #bdf5d1;
 }
 
 #txzz-panel .txzz-account-actions {
@@ -1169,6 +1349,12 @@
 }
 
 @media (max-width: 720px) {
+  #txzz-panel .txzz-flow-badge {
+    top: calc(var(--txzz-vtop, 0px) + 10px);
+    left: calc(var(--txzz-vleft, 0px) + 10px);
+    width: min(300px, calc(var(--txzz-vvw, 100vw) - 20px));
+  }
+
   #txzz-panel .txzz-shell {
     left: calc(var(--txzz-vleft, 0px) + 8px);
     top: calc(var(--txzz-vtop, 0px) + 8px);

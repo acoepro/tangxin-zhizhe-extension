@@ -34,8 +34,8 @@
     "purchase-api": "购买/解锁",
     "payment-api": "支付/订单",
     "balance-api": "余额",
-    "permission-api": "权限判定",
-    "fullplay": "完整播放",
+    "permission-api": "状态判定",
+    "fullplay": "播放资源",
     "account": "账号池",
     "request": "请求"
   };
@@ -50,16 +50,18 @@
       <span>志</span>
     </button>
     <div class="txzz-toast" data-view="toast" aria-live="polite"></div>
-    <div class="txzz-shell" role="dialog" aria-label="糖心志者安全测试面板">
+    <div class="txzz-flow-badge" data-view="flowBadge" aria-live="polite" hidden></div>
+    <div class="txzz-shell" role="dialog" aria-label="糖心志者功能管理面板">
       <header class="txzz-head">
         <div class="txzz-brand" data-drag-handle>
           <i>志</i>
           <div>
             <strong>糖心志者</strong>
-            <small data-view="subtitle">账号池驱动的完整播放链路验证</small>
+            <small data-view="subtitle">账号池、播放资源与下载任务管理</small>
           </div>
         </div>
         <div class="txzz-head-actions">
+          <button class="txzz-about-btn" data-action="about" title="打开项目主页" aria-label="打开项目主页">关于</button>
           <button data-action="refresh" title="刷新状态" aria-label="刷新状态">刷</button>
           <button data-action="close" title="关闭面板" aria-label="关闭面板">关</button>
         </div>
@@ -67,9 +69,9 @@
       <main class="txzz-main">
         <section class="txzz-hero">
           <div>
-            <span>糖心志者 · 沙箱权限验证</span>
+            <span>糖心志者 · 账号状态管理</span>
             <strong>永久会员 · 永久尤物圈 · 999 余额</strong>
-            <small>完整账号池、游客链路替换、金币视频购买判定与播放源对比</small>
+            <small>集中管理账号池、播放资源、金币内容和下载任务。</small>
           </div>
           <button class="txzz-primary" data-action="apply">应用展示覆盖</button>
         </section>
@@ -86,21 +88,21 @@
             <small data-view="rightsMeta">会员 / 尤物圈 / 余额</small>
           </article>
           <article>
-            <span>完整账号池</span>
+            <span>账号池</span>
             <strong data-view="poolCount">0</strong>
-            <small data-view="poolMeta">未选择完整账号</small>
+            <small data-view="poolMeta">未选择账号</small>
           </article>
           <article>
-            <span>完整播放</span>
+            <span>播放资源</span>
             <strong data-view="fullplayCount">0</strong>
-            <small data-view="latestFullplay">等待命中</small>
+            <small data-view="latestFullplay">等待记录</small>
           </article>
         </section>
 
         <section class="txzz-tabs">
-          <button class="is-active" data-tab="trace">链路</button>
-          <button data-tab="permission">权限</button>
-          <button data-tab="fullplay">完整播放</button>
+          <button class="is-active" data-tab="trace">资源</button>
+          <button data-tab="permission">状态</button>
+          <button data-tab="fullplay">播放资源</button>
           <button data-tab="downloads">下载</button>
           <button data-tab="accounts">账号池</button>
           <button data-tab="compare">对比</button>
@@ -110,7 +112,7 @@
         <section class="txzz-view is-active" data-view-panel="trace">
           <div class="txzz-flow" data-view="flow"></div>
           <div class="txzz-section-head">
-            <strong>播放链路</strong>
+            <strong>播放资源记录</strong>
             <button data-action="copy-latest">复制最新播放链接</button>
           </div>
           <div class="txzz-list" data-view="playback"></div>
@@ -118,16 +120,16 @@
 
         <section class="txzz-view" data-view-panel="permission">
           <div class="txzz-section-head">
-            <strong>权限与交易判定</strong>
-            <button data-action="copy-observations">复制判定记录</button>
+            <strong>账号状态与接口记录</strong>
+            <button data-action="copy-observations">复制接口记录</button>
           </div>
           <div class="txzz-list txzz-observations" data-view="observations"></div>
         </section>
 
         <section class="txzz-view" data-view-panel="fullplay">
           <div class="txzz-section-head">
-            <strong>完整播放命中</strong>
-            <button data-action="copy-full-link">复制最近完整链接</button>
+            <strong>播放资源详情</strong>
+            <button data-action="copy-full-link">复制最近播放链接</button>
           </div>
           <div class="txzz-fullplay-card" data-view="fullplaySummary"></div>
           <div class="txzz-list" data-view="fullplayList"></div>
@@ -137,8 +139,8 @@
           <div class="txzz-download-hero">
             <div>
               <span>糖心志者 · 下载中枢</span>
-              <strong>管理完整视频任务、保存记录和下载目录</strong>
-              <small>实时显示完整链接任务状态，支持查看、复制、保存和清理。</small>
+              <strong>管理视频任务、保存记录和下载目录</strong>
+              <small>实时显示下载任务状态，支持查看、复制、保存和清理。</small>
             </div>
             <button class="txzz-primary" data-action="refresh-downloads">刷新下载</button>
           </div>
@@ -171,7 +173,7 @@
               <div class="txzz-account-top-actions">
                 <button type="button" class="txzz-primary" data-action="open-account-form">添加账号</button>
                 <button type="button" data-action="sync-remote">同步云端</button>
-                <button type="button" data-action="verify-account">验证选中</button>
+                <button type="button" data-action="verify-account">检查本地</button>
               </div>
             </div>
 
@@ -190,16 +192,9 @@
                 <label>
                   账号来源
                   <select data-field="accountSourceMode">
-                    <option value="cloud">云端随机轮换</option>
-                    <option value="cloud-fixed">固定云端账号</option>
+                    <option value="cloud">云端自动轮换</option>
                     <option value="local">本地选中账号</option>
                     <option value="cloud-first">云端优先，本地兜底</option>
-                  </select>
-                </label>
-                <label>
-                  固定云端账号
-                  <select data-field="remoteFixedAccountId">
-                    <option value="">未选择</option>
                   </select>
                 </label>
               </div>
@@ -236,7 +231,7 @@
                 <div class="txzz-account-type-picker" data-view="accountTypePicker">
                   <button type="button" data-action="choose-account-type" data-credential-mode="password">
                     <b>账号密码</b>
-                    <span>填写用户名和密码，适合长期自动验证。</span>
+                    <span>填写用户名和密码，适合长期自动维护。</span>
                   </button>
                   <button type="button" data-action="choose-account-type" data-credential-mode="qrcode">
                     <b>账号凭证</b>
@@ -260,7 +255,7 @@
                   </label>
                   <label>
                     账号昵称
-                    <input data-field="accountLabel" placeholder="例如：完整账号 01">
+                    <input data-field="accountLabel" placeholder="例如：账号池账号 01">
                   </label>
                   <label data-credential="password">
                     用户名
@@ -284,7 +279,7 @@
                   </label>
                   <label class="txzz-wide">
                     备注
-                    <input data-field="accountNotes" placeholder="用途、权限范围或维护说明">
+                    <input data-field="accountNotes" placeholder="用途、状态范围或维护说明">
                   </label>
                   <div class="txzz-form-actions">
                     <button type="button" data-action="save-account">保存本地</button>
@@ -300,12 +295,12 @@
         <section class="txzz-view" data-view-panel="compare">
           <div class="txzz-compare">
             <div>
-              <label>完整权限账号链路 JSON</label>
-              <textarea data-field="fullTrace" spellcheck="false" placeholder="完整权限侧导出的链路，或账号池自动获取的 fullDetails"></textarea>
+              <label>账号池资源 JSON</label>
+              <textarea data-field="fullTrace" spellcheck="false" placeholder="账号池侧导出的资源记录，或自动获取的播放详情"></textarea>
             </div>
             <div>
-              <label>游客账号链路 JSON</label>
-              <textarea data-field="guestTrace" spellcheck="false" placeholder="游客侧自动生成，也可手动粘贴"></textarea>
+              <label>当前页面资源 JSON</label>
+              <textarea data-field="guestTrace" spellcheck="false" placeholder="当前页面自动生成，也可手动粘贴"></textarea>
             </div>
           </div>
           <button data-action="compare">生成对比</button>
@@ -314,11 +309,11 @@
 
         <section class="txzz-view" data-view-panel="tools">
           <div class="txzz-tools">
-            <button data-action="set-role-full">完整权限会话</button>
-            <button data-action="set-role-guest">游客会话</button>
-            <button data-action="load-saved">载入保存链路</button>
-            <button data-action="export">导出链路</button>
-            <button data-action="save">保存当前链路</button>
+            <button data-action="set-role-full">账号池会话</button>
+            <button data-action="set-role-guest">当前页面会话</button>
+            <button data-action="load-saved">载入保存记录</button>
+            <button data-action="export">导出记录</button>
+            <button data-action="save">保存当前记录</button>
             <button data-action="clear">清空记录</button>
             <button class="txzz-danger-action" data-action="clear-cache">清除数据缓存</button>
           </div>
@@ -362,8 +357,29 @@
   let drag = null;
   let ignoreNextToggle = false;
   let toastTimer = 0;
+  let flowBadgeTimer = 0;
   const downloadLocks = new Set();
   const announcedDownloadStages = new Set();
+  const FLOW_BADGE_TITLES = [
+    "展示覆盖",
+    "远程账号池",
+    "远程账号池同步失败",
+    "账号检查",
+    "播放资源",
+    "播放资源失败",
+    "播放资源缺少链接",
+    "视频下载",
+    "视频下载失败",
+    "已排队",
+    "读取播放列表",
+    "准备分片",
+    "下载分片",
+    "合并完成，待保存",
+    "选择保存位置",
+    "已保存到设备",
+    "下载失败",
+    "操作失败"
+  ];
 
   function isCompactViewport() {
     return window.matchMedia?.("(max-width: 720px)")?.matches || window.innerWidth <= 720;
@@ -443,7 +459,7 @@
   }
 
   function labelForRole(role) {
-    return role === "full" ? "完整权限会话" : "游客会话";
+    return role === "full" ? "账号池会话" : "当前页面会话";
   }
 
   function categoryLabel(category) {
@@ -536,7 +552,7 @@
   }
 
   function accountTitle(account) {
-    return account?.label || account?.username || account?.id || "完整账号";
+    return account?.label || account?.username || account?.id || "账号池账号";
   }
 
   function accountNickname(account = {}) {
@@ -558,15 +574,70 @@
       return { ok: false, label: "不可用", tone: "bad", reason: "账号没有可用凭据" };
     }
     if (account.status === "ok") {
-      return { ok: true, label: "可用", tone: "good", reason: account.lastVerifiedAt ? `上次验证 ${account.lastVerifiedAt}` : "账号状态正常" };
+      return { ok: true, label: "可用", tone: "good", reason: account.lastVerifiedAt ? `上次检查 ${account.lastVerifiedAt}` : "账号状态正常" };
     }
     if (account.status === "error") {
-      return { ok: false, label: "不可用", tone: "bad", reason: account.lastError || "最近一次验证失败" };
+      return { ok: false, label: "不可用", tone: "bad", reason: account.lastError || "最近一次检查失败" };
     }
     if (account.status === "imported") {
       return { ok: true, label: "本地可用", tone: "good", reason: "已从当前浏览器会话导入" };
     }
-    return { ok: true, label: "待验证", tone: "warn", reason: "尚未执行验证，可点击验证确认" };
+    return { ok: true, label: "待检查", tone: "warn", reason: "尚未执行检查，可点击检查确认" };
+  }
+
+  function firstFilled(source = {}, keys = []) {
+    for (const key of keys) {
+      const value = source?.[key];
+      if (value !== undefined && value !== null && String(value).trim() !== "") return value;
+    }
+    return "";
+  }
+
+  function parseOpenState(value, fallbackText = "") {
+    const raw = String(value ?? "").trim();
+    const hint = String(fallbackText ?? "").trim();
+    const text = `${raw} ${hint}`.trim().toLowerCase();
+    if (!text) return null;
+    if (/未开通|未购买|已过期|过期|失效|不可用|false|no|none|null/.test(text) || /^(0|n)$/.test(raw.toLowerCase())) return false;
+    if (/永久|已开通|已购买|true|yes|vip|有效/.test(text) || /^(1|y)$/.test(raw.toLowerCase())) return true;
+    if (/^\d+$/.test(raw)) return Number(raw) > 0;
+    if (/\d{4}[-/年]\d{1,2}[-/月]\d{1,2}/.test(raw)) return true;
+    return null;
+  }
+
+  function formatOpenLabel(open, detail = "") {
+    const text = String(detail || "").trim();
+    if (open === true) {
+      if (/永久/.test(text)) return "永久";
+      if (text && !/^[yn10]$/i.test(text)) return clipText(text, 8);
+      return "已开通";
+    }
+    if (open === false) return "未开通";
+    return "未知";
+  }
+
+  function formatCoinValue(value) {
+    if (value === undefined || value === null || String(value).trim() === "") return "未知";
+    const text = String(value).trim();
+    const numeric = Number(text);
+    if (Number.isFinite(numeric)) return String(Number.isInteger(numeric) ? numeric : Number(numeric.toFixed(2)));
+    return clipText(text, 10);
+  }
+
+  function accountRightsInfo(account = {}) {
+    const info = account?.userInfo || {};
+    const vipValue = firstFilled(info, ["is_vip", "vip", "has_vip", "isVip", "vip_status", "vipStatus"]);
+    const vipDetail = firstFilled(info, ["vip_end_time", "group_end_time", "vipEndTime", "groupEndTime", "group_name"]);
+    const darkValue = firstFilled(info, ["is_dark_vip", "dark_vip", "has_dark_vip", "isDarkVip", "darkVip", "dark_vip_status", "darkVipStatus"]);
+    const darkDetail = firstFilled(info, ["dark_vip_end_time", "darkVipEndTime", "dark_group_end_time", "group_end_time", "group_name"]);
+    const coinValue = firstFilled(info, ["coin", "gold", "balance", "balance_income", "money", "amount", "wallet", "ticket"]);
+    const vipOpen = parseOpenState(vipValue, vipDetail);
+    const darkOpen = parseOpenState(darkValue, darkDetail);
+    return {
+      vip: { label: formatOpenLabel(vipOpen, vipDetail || vipValue), tone: vipOpen === true ? "good" : vipOpen === false ? "bad" : "warn" },
+      dark: { label: formatOpenLabel(darkOpen, darkDetail || darkValue), tone: darkOpen === true ? "good" : darkOpen === false ? "bad" : "warn" },
+      coin: { label: formatCoinValue(coinValue), tone: coinValue === undefined || coinValue === null || String(coinValue).trim() === "" ? "warn" : "good" }
+    };
   }
 
   function credentialLabel(account = {}) {
@@ -586,15 +657,26 @@
     return state.accountPool.find((item) => item.id === state.selectedFullAccountId) || state.accountPool[0] || null;
   }
 
+  function latestUsedAccountId() {
+    const latest = state.fullDetails[state.fullDetails.length - 1] || {};
+    return String(latest.accountId || latest.rotation?.accountId || "");
+  }
+
+  function latestUsedAccount() {
+    const id = latestUsedAccountId();
+    return id ? state.accountPool.find((item) => item.id === id) || null : null;
+  }
+
   function remoteSourceLabel(mode) {
     if (mode === "local") return "本地选中账号";
     if (mode === "cloud-first") return "云端优先，本地兜底";
-    if (mode === "cloud-fixed") return "固定云端账号";
-    return "云端随机轮换";
+    return "云端自动轮换";
   }
 
   function isCloudAccount(account = {}) {
-    return ["remote", "qrcode", "remote-seed", "seed"].includes(account.source);
+    const source = String(account.source || "");
+    return Boolean(account.cloudReadonly || account.isCloud || account.remoteId || account.cloudId)
+      || ["remote", "qrcode", "remote-seed", "seed"].includes(source);
   }
 
   function cloudHasAccount(accountId = "") {
@@ -868,7 +950,7 @@
       if (anchor?.parentNode) anchor.parentNode.insertBefore(card, anchor.nextSibling);
       else container.insertBefore(card, container.firstChild);
     }
-    card.innerHTML = '<div class="txzz-row"><div><span>账号状态</span><strong>永久会员 · 永久尤物圈</strong><small>糖心志者展示覆盖已应用，当前页面按完整权限展示</small></div><div class="txzz-balance"><span>余额</span><strong>999</strong></div></div>';
+    card.innerHTML = '<div class="txzz-row"><div><span>账号状态</span><strong>永久会员 · 永久尤物圈</strong><small>糖心志者展示覆盖已应用，当前页面按高级账号状态展示</small></div><div class="txzz-balance"><span>余额</span><strong>999</strong></div></div>';
   }
 
   function patchVisibleDark() {
@@ -882,7 +964,7 @@
       const card = document.createElement("section");
       card.id = "txzz-dark-status-card";
       card.dataset.txzzRendered = "1";
-      card.innerHTML = '<span>尤物圈权限</span><strong>永久尤物圈已开通</strong><small>权限弹窗与模糊遮罩已解除，可继续浏览当前列表</small>';
+      card.innerHTML = '<span>尤物圈权益</span><strong>永久尤物圈已开通</strong><small>访问弹窗与模糊遮罩已处理，可继续浏览当前列表</small>';
       const anchor = container.querySelector(".main") || container.firstElementChild;
       if (anchor?.parentNode) anchor.parentNode.insertBefore(card, anchor);
       else container.insertBefore(card, container.firstChild);
@@ -1007,7 +1089,31 @@
     state.flow.push(item);
     state.flow = state.flow.slice(-80);
     renderFlow();
+    updateFlowBadge(item);
     publishState();
+  }
+
+  function isKeyFlowTitle(title = "") {
+    const value = String(title || "");
+    return FLOW_BADGE_TITLES.some((item) => value === item || value.startsWith(item));
+  }
+
+  function updateFlowBadge(item = {}) {
+    const badge = views.flowBadge;
+    if (!badge || !isKeyFlowTitle(item.title)) return;
+    window.clearTimeout(flowBadgeTimer);
+    const level = item.level === "error" ? "is-error" : item.level === "ok" ? "is-ok" : "is-running";
+    badge.hidden = false;
+    badge.className = `txzz-flow-badge is-show ${level}`;
+    badge.innerHTML = `
+      <span>${escapeHtml(item.level === "error" ? "异常" : item.level === "ok" ? "完成" : "进行中")}</span>
+      <strong>${escapeHtml(item.title || "糖心志者")}</strong>
+      <small>${escapeHtml(clipText(item.detail || "", 42))}</small>
+    `;
+    flowBadgeTimer = window.setTimeout(() => {
+      badge.className = "txzz-flow-badge";
+      badge.hidden = true;
+    }, item.level === "error" ? 8200 : 5200);
   }
 
   function showToast(message, level = "info") {
@@ -1031,16 +1137,19 @@
           <span>${escapeHtml(item.detail)}</span>
         </div>
       </div>
-    `).join("") || `<div class="txzz-empty">等待链路事件</div>`;
+    `).join("") || `<div class="txzz-empty">等待流程记录</div>`;
   }
 
   function renderStats() {
     const selected = selectedAccount();
+    const latestCloud = latestUsedAccount();
     views.poolCount.textContent = String(state.accountPool.length);
-    views.poolMeta.textContent = selected ? `${accountTitle(selected)} / ${selected.status || "idle"}` : "未选择完整账号";
+    views.poolMeta.textContent = latestCloud
+      ? `最近使用 ${accountTitle(latestCloud)}`
+      : selected ? `${accountTitle(selected)} / ${selected.status || "idle"}` : "未选择账号";
     views.fullplayCount.textContent = String(state.fullDetails.length);
     const latest = state.fullDetails[state.fullDetails.length - 1];
-    views.latestFullplay.textContent = latest ? `${latest.movieId} / ${latest.action || "full_detail"}` : "等待命中";
+    views.latestFullplay.textContent = latest ? `${latest.movieId} / ${latest.action || "full_detail"}` : "等待记录";
     publishState();
   }
 
@@ -1081,7 +1190,7 @@
   function downloadCardTitle(task = {}) {
     const title = String(task.titleSnippet || task.movieTitle || "").trim();
     if (title) return title.length > 14 ? `${title.slice(0, 14)}...` : title;
-    return task.movieId ? `完整视频 ${task.movieId}` : "完整视频";
+    return task.movieId ? `视频 ${task.movieId}` : "视频任务";
   }
 
   function canSaveDownload(task = {}) {
@@ -1182,7 +1291,7 @@
             </div>
           </article>
         `;
-      }).join("") || `<div class="txzz-empty">还没有下载任务。进入视频详情页点击「下载」，或在「完整播放」页点击「下载完整视频」。</div>`;
+      }).join("") || `<div class="txzz-empty">还没有下载任务。进入视频详情页点击「下载」，或在「播放资源」页点击「下载视频」。</div>`;
     }
     if (views.downloadSnapshots) {
       const snapshots = Array.isArray(state.downloadSnapshots) ? state.downloadSnapshots.slice().reverse() : [];
@@ -1251,32 +1360,19 @@
         <code>${escapeHtml(item.url || "")}</code>
         ${item.bodyHead ? `<p>${escapeHtml(clipText(item.bodyHead, 260))}</p>` : ""}
       </article>
-    `).join("") || `<div class="txzz-empty">还没有命中购买、金币、余额或权限判定接口。</div>`;
+    `).join("") || `<div class="txzz-empty">还没有记录购买、金币、余额或账号状态接口。</div>`;
   }
 
   function renderAccounts() {
     const remote = state.remote || {};
     renderStats();
     if (fields.remoteBaseUrl) fields.remoteBaseUrl.value = remote.baseUrl || "";
-    if (fields.remoteClientToken) fields.remoteClientToken.value = "";
-    if (fields.remoteAdminToken) fields.remoteAdminToken.value = "";
     if (fields.accountSourceMode) fields.accountSourceMode.value = remote.accountSourceMode || "cloud";
     if (fields.showInvalidCloudAccounts) fields.showInvalidCloudAccounts.checked = uiState.showInvalidCloudAccounts;
-    if (fields.remoteFixedAccountId) {
-      const fixedId = remote.fixedAccountId || state.selectedFullAccountId || "";
-      const cloudAccounts = state.accountPool
-        .filter(isCloudAccount)
-        .filter((account) => uiState.showInvalidCloudAccounts || accountStatusInfo(account).ok);
-      fields.remoteFixedAccountId.innerHTML = `<option value="">未选择</option>` + cloudAccounts.map((account) => `
-        <option value="${escapeHtml(account.id)}"${account.id === fixedId ? " selected" : ""}>${escapeHtml(accountNickname(account))} / ${escapeHtml(accountStatusInfo(account).label)}</option>
-      `).join("");
-      fields.remoteFixedAccountId.value = fixedId;
-    }
     if (views.remoteMeta) {
       const sourceLabel = remoteSourceLabel(remote.accountSourceMode);
-      const fixedText = remote.accountSourceMode === "cloud-fixed" ? ` / 固定=${remote.fixedAccountId || state.selectedFullAccountId || "未选择"}` : "";
       views.remoteMeta.textContent = remote.baseUrl
-        ? `已配置 / 来源=${sourceLabel}${fixedText} / ${remote.lastError ? `错误：${remote.lastError}` : remote.lastSyncAt ? `上次同步 ${remote.lastSyncAt}` : "等待同步"}`
+        ? `已配置 / 来源=${sourceLabel} / ${remote.lastError ? `错误：${remote.lastError}` : remote.lastSyncAt ? `上次同步 ${remote.lastSyncAt}` : "等待同步"}`
         : "远程未配置；本地账号可上传到 Worker/Supabase 后再同步。";
     }
     const stats = accountPoolStats();
@@ -1307,11 +1403,14 @@
     setAccountCredentialMode(fields.accountCredentialMode?.value || "password");
 
     const visibleAccounts = visibleAccountPool();
+    const activeCloudAccountId = latestUsedAccountId();
     views.accountPool.innerHTML = visibleAccounts.map((account) => {
-      const isSelected = account.id === state.selectedFullAccountId;
       const cloudReadonly = isCloudAccount(account);
+      const isSelected = !cloudReadonly && account.id === state.selectedFullAccountId;
+      const isActiveCloud = cloudReadonly && activeCloudAccountId && account.id === activeCloudAccountId;
       const alreadyCloud = !cloudReadonly && cloudHasAccount(account.id);
       const status = accountStatusInfo(account);
+      const rights = accountRightsInfo(account);
       const title = accountNickname(account);
       const meta = [
         cloudReadonly ? "云端账号" : "本地账号",
@@ -1321,19 +1420,28 @@
         account.id
       ].filter(Boolean).join(" / ");
       return `
-        <article class="${["txzz-account-card", isSelected ? "is-selected" : "", cloudReadonly ? "is-cloud" : "is-local", status.ok ? "is-usable" : "is-invalid"].filter(Boolean).join(" ")}">
+        <article class="${["txzz-account-card", isSelected ? "is-selected" : "", isActiveCloud ? "is-active-cloud" : "", cloudReadonly ? "is-cloud" : "is-local", status.ok ? "is-usable" : "is-invalid"].filter(Boolean).join(" ")}">
           <div class="txzz-account-card-main">
             <div class="txzz-account-card-title">
               <b>${escapeHtml(title)}</b>
-              <em class="txzz-status-${escapeHtml(status.tone)}">${escapeHtml(status.label)}</em>
+              <div class="txzz-account-badges">
+                ${isActiveCloud ? `<em class="txzz-status-running">最近使用</em>` : ""}
+                ${cloudReadonly ? `<em class="txzz-status-cloud">自动轮换</em>` : ""}
+                <em class="txzz-status-${escapeHtml(status.tone)}">${escapeHtml(status.label)}</em>
+              </div>
             </div>
             <span>${escapeHtml(meta)}</span>
+            <div class="txzz-account-rights" aria-label="账号权益摘要">
+              <span class="txzz-right-${escapeHtml(rights.vip.tone)}"><i>普通 VIP</i><b>${escapeHtml(rights.vip.label)}</b></span>
+              <span class="txzz-right-${escapeHtml(rights.dark.tone)}"><i>尤物圈</i><b>${escapeHtml(rights.dark.label)}</b></span>
+              <span class="txzz-right-${escapeHtml(rights.coin.tone)}"><i>金币</i><b>${escapeHtml(rights.coin.label)}</b></span>
+            </div>
             <p>${escapeHtml(status.ok ? status.reason : `不可用原因：${status.reason}`)}</p>
             ${cloudReadonly ? `<code>云端摘要：${escapeHtml(account.tokenMasked || account.qrcodeMasked || account.passwordMasked || "凭据仅服务端可见")}</code>` : `<code>${escapeHtml(account.tokenMasked || (account.hasToken ? "token 已保存" : "本地凭据可编辑"))}</code>`}
           </div>
           <div class="txzz-account-actions">
-            <button data-action="select-account" data-account-id="${escapeHtml(account.id)}">${isSelected ? "已选择" : "选择"}</button>
-            <button data-action="verify-account" data-account-id="${escapeHtml(account.id)}">验证</button>
+            ${cloudReadonly ? `<button data-action="noop" disabled>自动轮换</button>` : `<button data-action="select-account" data-account-id="${escapeHtml(account.id)}">${isSelected ? "已选择" : "选择"}</button>`}
+            ${cloudReadonly ? "" : `<button data-action="verify-account" data-account-id="${escapeHtml(account.id)}">检查</button>`}
             ${cloudReadonly ? `<button data-action="show-account-summary" data-account-id="${escapeHtml(account.id)}">摘要</button>` : `<button data-action="edit-account" data-account-id="${escapeHtml(account.id)}">编辑</button>`}
             ${cloudReadonly ? "" : `<button data-action="${alreadyCloud ? "noop" : "upload-local-account-remote"}" data-account-id="${escapeHtml(account.id)}" ${alreadyCloud ? "disabled" : ""}>${alreadyCloud ? "已在云端" : "上传云端"}</button>`}
             ${cloudReadonly ? "" : `<button data-action="remove-account" data-account-id="${escapeHtml(account.id)}">移除</button>`}
@@ -1347,7 +1455,7 @@
     const latest = state.fullDetails[state.fullDetails.length - 1];
     views.fullplaySummary.innerHTML = latest ? `
       <div>
-        <span>最近命中</span>
+        <span>最近记录</span>
         <strong>${escapeHtml(latest.movieId || "")}</strong>
         <small>${escapeHtml([latest.accountLabel || latest.accountUser, latest.action, latest.hasBuy ? `has_buy=${latest.hasBuy}` : ""].filter(Boolean).join(" / "))}</small>
       </div>
@@ -1356,7 +1464,7 @@
         <strong>${escapeHtml(latest.fullStat?.segments ?? "?")} 片</strong>
         <small>${escapeHtml(latest.fullStat?.duration ? `${latest.fullStat.duration}s` : latest.fullStat?.error || "等待统计")}</small>
       </div>
-    ` : `<div class="txzz-empty">等待页面命中 /movie/detail。</div>`;
+    ` : `<div class="txzz-empty">等待页面记录 /movie/detail。</div>`;
     views.fullplayList.innerHTML = state.fullDetails.slice(-24).reverse().map((item) => `
       <article>
         <b>${escapeHtml(item.movieId)} 路 ${escapeHtml(item.action || "full_detail")}</b>
@@ -1364,10 +1472,10 @@
         <code>${escapeHtml(item.playLink || "")}</code>
         ${item.backupLink ? `<code>${escapeHtml(item.backupLink)}</code>` : ""}
         <div class="txzz-account-actions">
-          <button data-action="download-full-video" data-movie-id="${escapeHtml(item.movieId || "")}">下载完整视频</button>
+          <button data-action="download-full-video" data-movie-id="${escapeHtml(item.movieId || "")}">下载视频</button>
         </div>
       </article>
-    `).join("") || `<div class="txzz-empty">还没有完整详情记录。</div>`;
+    `).join("") || `<div class="txzz-empty">还没有播放详情记录。</div>`;
     renderStats();
   }
 
@@ -1454,7 +1562,7 @@
       state.playback.push(normalized);
       state.playback = state.playback.slice(-140);
       renderPlayback();
-      emitFlow("捕获播放链路", `${categoryLabel(normalized.category)} / ${normalized.via || normalized.kind || "runtime"}`, "ok");
+      emitFlow("记录播放资源", `${categoryLabel(normalized.category)} / ${normalized.via || normalized.kind || "runtime"}`, "ok");
       publishState();
     }
   }
@@ -1468,7 +1576,7 @@
       state.observations.push(normalized);
       state.observations = state.observations.slice(-120);
       renderObservations();
-      emitFlow("权限/交易命中", `${categoryLabel(normalized.category)} / ${flags.join(",") || normalized.status || "observed"}`, "ok");
+      emitFlow("账号状态记录", `${categoryLabel(normalized.category)} / ${flags.join(",") || normalized.status || "observed"}`, "ok");
       publishState();
     }
   }
@@ -1506,8 +1614,8 @@
     const full = fields.fullTrace.value.trim() ? parseMaybeJson(fields.fullTrace.value.trim()) : { fullDetails: state.fullDetails };
     const guest = fields.guestTrace.value.trim() ? parseMaybeJson(fields.guestTrace.value.trim()) : await exportTrace();
     if (!full || typeof full !== "object") {
-      views.compareResult.textContent = JSON.stringify({ error: "请先粘贴完整权限账号链路 JSON" }, null, 2);
-      emitFlow("链路对比", "缺少完整权限账号链路 JSON", "error");
+      views.compareResult.textContent = JSON.stringify({ error: "请先粘贴账号池资源 JSON" }, null, 2);
+      emitFlow("资源对比", "缺少账号池资源 JSON", "error");
       return;
     }
     const fullLinks = urlsFromTrace(full);
@@ -1521,11 +1629,11 @@
       fullOnly,
       fullDetails: full.fullDetails || [],
       recommendation: fullOnly.length
-        ? "游客侧缺少完整权限播放源；优先确认 /movie/detail 是否已被完整详情覆盖。"
-        : "播放链路没有明显缺口；继续观察 HLS 分片、Referer、有效期和播放器实际时长。"
+        ? "当前页面缺少账号池播放资源；优先确认视频详情接口是否已返回可用资源。"
+        : "播放资源没有明显缺口；继续观察 HLS 分片、Referer、有效期和播放器实际时长。"
     };
     views.compareResult.textContent = JSON.stringify(result, null, 2);
-    emitFlow("链路对比", `完整 ${fullLinks.size} 条，游客 ${guestLinks.size} 条，共享 ${shared.length} 条`, "ok");
+    emitFlow("资源对比", `账号池 ${fullLinks.size} 条，当前页面 ${guestLinks.size} 条，共享 ${shared.length} 条`, "ok");
   }
 
   async function copyText(text, label) {
@@ -1604,7 +1712,7 @@
     if (saved.lastFullTrace) fields.fullTrace.value = JSON.stringify(saved.lastFullTrace, null, 2);
     if (saved.lastGuestTrace) fields.guestTrace.value = JSON.stringify(saved.lastGuestTrace, null, 2);
     views.exportBox.textContent = JSON.stringify(saved, null, 2);
-    if (verbose) emitFlow("载入链路", "已读取扩展本地保存记录与账号池", "ok");
+    if (verbose) emitFlow("载入记录", "已读取扩展本地保存记录与账号池", "ok");
     publishState();
     return saved;
   }
@@ -1647,13 +1755,13 @@
   }
 
   async function clearDataCache() {
-    const ok = window.confirm("将清除插件本地数据、账号池缓存、完整详情缓存和保存链路，并重置为当前版本默认状态。新版本覆盖安装时会自动清理旧缓存，此按钮用于手动兜底。是否继续？");
+    const ok = window.confirm("将清除插件本地数据、账号池缓存、播放详情缓存和保存记录，并重置为当前版本默认状态。新版本覆盖安装时会自动清理旧缓存，此按钮用于手动兜底。是否继续？");
     if (!ok) return;
     window.postMessage({ source: "txzz-content", kind: "clear-runtime-cache" }, "*");
     const response = await sendRuntime("clearAllData");
     resetLocalRuntimeState(response.state || {});
     await collectSession().catch(() => {});
-    emitFlow("清除缓存", "已清除插件旧数据缓存，建议刷新当前页面后继续测试", "ok");
+    emitFlow("清除缓存", "已清除插件旧数据缓存，建议刷新当前页面后继续使用", "ok");
   }
 
   function accountFromForm() {
@@ -1708,7 +1816,7 @@
       remote: {
         baseUrl: fields.remoteBaseUrl.value.trim(),
         accountSourceMode: fields.accountSourceMode?.value || "cloud",
-        fixedAccountId: fields.remoteFixedAccountId?.value || state.selectedFullAccountId || "",
+        fixedAccountId: "",
         enabled: true,
         fallbackLocal: fields.accountSourceMode?.value === "cloud-first"
       }
@@ -1751,13 +1859,13 @@
     const id = String(movieId || currentMovieId()).trim();
     if (!id) throw new Error("当前页面不是视频详情页，无法识别视频编号");
     if (downloadLocks.has(id)) {
-      emitFlow("完整下载", `视频 ${id} 下载任务已经在创建中，请稍候`, "ok");
+    emitFlow("视频下载", `视频 ${id} 下载任务已经在创建中，请稍候`, "ok");
       showToast("下载任务已经在创建中", "ok");
       return { ok: true, locked: true, movieId: id };
     }
     downloadLocks.add(id);
-    emitFlow("完整下载", `开始获取完整视频 ${id}`);
-    showToast("正在获取完整视频链接");
+    emitFlow("视频下载", `开始获取视频 ${id}`);
+    showToast("正在获取视频链接");
     try {
       const bootstrapSession = await collectSession();
       const response = await sendRuntime("downloadFullVideo", {
@@ -1768,7 +1876,7 @@
       });
       if (response.state) syncSavedState(response.state);
       const mode = response.mode === "m3u8-merged-ts" ? "m3u8 分片合并" : "直接下载";
-      emitFlow("完整下载", `${mode} 已创建下载任务：${response.filename || id}`, "ok");
+      emitFlow("视频下载", `${mode} 已创建下载任务：${response.filename || id}`, "ok");
       showToast(`${mode}任务已创建`, "ok");
       if (response.summary) {
         state.fullDetails.push({
@@ -1781,7 +1889,7 @@
       }
       return response;
     } catch (err) {
-      emitFlow("完整下载失败", err?.message || String(err), "error");
+      emitFlow("视频下载失败", err?.message || String(err), "error");
       showToast(`下载失败：${err?.message || String(err)}`, "error");
       throw err;
     } finally {
@@ -1850,18 +1958,24 @@
   }
 
   async function selectAccount(accountId) {
+    const account = state.accountPool.find((item) => item.id === accountId);
+    if (account && isCloudAccount(account)) {
+      emitFlow("账号池", "云端账号由系统按金币数量自动轮换，不支持手动固定选择", "ok");
+      renderAccounts();
+      return;
+    }
     const response = await sendRuntime("selectAccount", { accountId });
     syncSavedState(response.state || {});
     emitFlow("账号池", `已选择 ${accountTitle(selectedAccount())}`, "ok");
   }
 
   async function verifyAccount(accountId = state.selectedFullAccountId) {
-    emitFlow("账号验证", `开始验证 ${accountId || "选中账号"}`);
+    emitFlow("账号检查", `开始检查 ${accountId || "选中账号"}`);
     const session = await collectSession();
     const response = await sendRuntime("verifyAccount", { accountId, bootstrapSession: session });
     syncSavedState(response.state || {});
     const account = response.account || selectedAccount();
-    emitFlow("账号验证", `${accountTitle(account)} 验证通过`, "ok");
+    emitFlow("账号检查", `${accountTitle(account)} 状态正常`, "ok");
   }
 
   async function removeAccount(accountId) {
@@ -1872,9 +1986,9 @@
 
   async function importCurrentSession() {
     const session = await collectSession();
-    const response = await sendRuntime("importAccountSession", { session, label: session.nickname ? `${session.nickname} 完整会话` : "" });
+    const response = await sendRuntime("importAccountSession", { session, label: session.nickname ? `${session.nickname} 页面会话` : "" });
     syncSavedState(response.state || {});
-    emitFlow("账号池", "已导入当前页面 token/deviceId 为完整账号", "ok");
+    emitFlow("账号池", "已导入当前页面 token/deviceId 为账号池账号", "ok");
   }
 
   function installHook() {
@@ -1921,6 +2035,10 @@
       if (action === "noop") return;
       if (action === "toggle") togglePanel();
       if (action === "close") togglePanel(false);
+      if (action === "about") {
+        window.open("https://github.com/lsy5920/tangxin-zhizhe-extension", "_blank", "noopener,noreferrer");
+        emitFlow("关于", "已打开糖心志者项目主页", "ok");
+      }
       if (action === "refresh") {
         await collectSession();
         await loadSavedState(false);
@@ -1930,12 +2048,12 @@
       if (action === "set-role-full") {
         state.role = "full";
         await collectSession();
-        emitFlow("会话角色", "已标记为完整权限会话", "ok");
+        emitFlow("会话角色", "已标记为账号池会话", "ok");
       }
       if (action === "set-role-guest") {
         state.role = "guest";
         await collectSession();
-        emitFlow("会话角色", "已标记为游客会话", "ok");
+        emitFlow("会话角色", "已标记为当前页面会话", "ok");
       }
       if (action === "load-saved") await loadSavedState();
       if (action === "copy-latest") {
@@ -1944,7 +2062,7 @@
       }
       if (action === "copy-full-link") {
         const latest = state.fullDetails[state.fullDetails.length - 1];
-        await copyText(latest?.playLink || latest?.backupLink || "", "最近完整链接");
+        await copyText(latest?.playLink || latest?.backupLink || "", "最近播放链接");
       }
       if (action === "copy-observations") {
         await copyText(JSON.stringify(state.observations.slice(-80), null, 2), "判定记录");
@@ -1991,13 +2109,13 @@
         views.exportBox.textContent = JSON.stringify(trace, null, 2);
         if (state.role === "guest") fields.guestTrace.value = JSON.stringify(trace, null, 2);
         if (state.role === "full") fields.fullTrace.value = JSON.stringify(trace, null, 2);
-        emitFlow("导出链路", `已导出 ${trace.playback.length} 条播放记录，${trace.observations.length} 条判定记录`, "ok");
+        emitFlow("导出记录", `已导出 ${trace.playback.length} 条播放记录，${trace.observations.length} 条接口记录`, "ok");
       }
       if (action === "save") {
         const trace = await exportTrace();
         await sendRuntime("saveTrace", trace);
         views.exportBox.textContent = JSON.stringify(trace, null, 2);
-        emitFlow("保存链路", "已保存到扩展本地存储", "ok");
+        emitFlow("保存记录", "已保存到扩展本地存储", "ok");
       }
       if (action === "clear") {
         state.playback = [];
@@ -2039,7 +2157,8 @@
 
   function startDrag(event) {
     if (event.type === "mousedown" && event.button !== 0) return;
-    if (event.target.closest("button,input,textarea,select,a,[data-action],[data-tab]")) return;
+    const fromBall = Boolean(event.target.closest(".txzz-ball"));
+    if (!fromBall && event.target.closest("button,input,textarea,select,a,[data-action],[data-tab]")) return;
     if (state.expanded && isCompactViewport()) return;
     const point = event.touches ? event.touches[0] : event;
     const target = state.expanded ? shell : ball;
@@ -2105,7 +2224,7 @@
   }
 
   function pointerOpenFallback(event) {
-    if (state.expanded || drag?.moved) return;
+    if (state.expanded || drag?.moved || ignoreNextToggle) return;
     togglePanel(true);
     ignoreNextToggle = true;
     window.setTimeout(() => {
@@ -2121,7 +2240,7 @@
     event.preventDefault();
     event.stopPropagation();
     if (event.stopImmediatePropagation) event.stopImmediatePropagation();
-    emitFlow("完整下载", `已接管详情页下载按钮：${movieId}`);
+    emitFlow("视频下载", `已接管详情页下载按钮：${movieId}`);
     showToast("已接管下载按钮，正在创建任务");
     downloadFullVideo(movieId).catch(() => {});
     return true;
@@ -2157,7 +2276,7 @@
   }
 
   async function handleFullDetailRequest(payload) {
-    emitFlow("完整播放", `命中 /movie/detail，视频 ${payload.movieId}`);
+    emitFlow("播放资源", `记录视频详情接口，视频 ${payload.movieId}`);
     try {
       const bootstrapSession = await collectSession();
       const response = await sendRuntime("getFullDetail", {
@@ -2184,7 +2303,7 @@
         renderFullDetails();
         addObservation({
           kind: "fullplay",
-          via: "账号池完整详情",
+          via: "账号池播放详情",
           url: summary.playLink || summary.backupLink || "",
           category: "fullplay",
           flags: [summary.action || "full_detail", `movie:${summary.movieId}`],
@@ -2193,10 +2312,10 @@
         if (summary.playLink) addPlayback({ kind: "media", via: "fullplay.play_link", url: summary.playLink, category: "m3u8" });
         if (summary.backupLink) addPlayback({ kind: "media", via: "fullplay.backup_link", url: summary.backupLink, category: "m3u8" });
         emitFlow(
-          summary.playLink || summary.backupLink ? "完整播放" : "完整播放缺少链接",
+          summary.playLink || summary.backupLink ? "播放资源" : "播放资源缺少链接",
           summary.playLink || summary.backupLink
-            ? `已返回完整详情 ${summary.movieId} / ${summary.action}`
-            : `完整详情 ${summary.movieId} 未返回 play_link 或 backup_link`,
+            ? `已返回 ${summary.movieId} / ${summary.accountLabel || summary.accountUser || "自动轮换账号"}`
+            : `播放详情 ${summary.movieId} 未返回 play_link 或 backup_link`,
           summary.playLink || summary.backupLink ? "ok" : "error"
         );
       }
@@ -2208,7 +2327,7 @@
         id: payload.id,
         payload: { ok: false, error: err?.message || String(err) }
       }, "*");
-      emitFlow("完整播放失败", err?.message || String(err), "error");
+      emitFlow("播放资源失败", err?.message || String(err), "error");
     }
   }
 
@@ -2249,8 +2368,8 @@
     for (const mediaUrl of Array.isArray(record.mediaUrls) ? record.mediaUrls : []) {
       addPlayback({ kind: "media", via: `${record.via || kind}.body`, url: mediaUrl, category: /\.(m3u8)(?:[?#]|$)/i.test(mediaUrl) ? "m3u8" : /\.mp4(?:[?#]|$)/i.test(mediaUrl) ? "mp4" : "video-api", ts: record.ts });
     }
-    if (kind === "hook") emitFlow("Hook", `${payload.target} ${payload.status}`, "ok");
-    if (kind === "fullplay-status") emitFlow("完整播放", payload.message || "状态更新", payload.level === "error" ? "error" : "ok");
+    if (kind === "hook") emitFlow("页面监听", `${payload.target} ${payload.status}`, "ok");
+    if (kind === "fullplay-status") emitFlow("播放资源", payload.message || "状态更新", payload.level === "error" ? "error" : "ok");
   });
 
   installHook();
