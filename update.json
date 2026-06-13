@@ -1,16 +1,16 @@
 {
   "schema": 1,
   "name": "糖心志者",
-  "version": "2.0.1",
-  "build": "2026-06-13-1349",
-  "releasedAt": "2026-06-13 13:49",
+  "version": "2.0.2",
+  "build": "2026-06-13-1352",
+  "releasedAt": "2026-06-13 13:52",
   "homepage": "https://github.com/lsy5920/tangxin-zhizhe-extension",
   "changelog": [
     {
-      "id": "2026-06-13-1349",
+      "id": "2026-06-13-1352",
       "type": "新增",
-      "title": "糖心志者 2.0.1 更新",
-      "detail": "更新提醒弹窗新增下载最新版按钮，点击后会直接下载 GitHub 仓库 main 分支最新压缩包，同时保留查看更新和稍后提醒入口。"
+      "title": "糖心志者 2.0.2 下载功能测试版",
+      "detail": "用于测试更新提醒弹窗的下载最新版按钮，点击后会直接下载 GitHub 仓库 main 分支最新压缩包。"
     }
   ]
 }
