@@ -41,140 +41,275 @@
   };
   const PLAYBACK_CATEGORIES = new Set(["m3u8", "mp4", "segment", "play-api", "video-api"]);
   const OBSERVATION_CATEGORIES = new Set(["purchase-api", "payment-api", "balance-api", "permission-api", "fullplay", "account"]);
+  const PAGE_TITLES = {
+    overview: "总览",
+    trace: "播放资源",
+    permission: "账号状态",
+    fullplay: "播放详情",
+    downloads: "下载管理",
+    accounts: "账号池",
+    compare: "资源对比",
+    tools: "工具"
+  };
+  const ASSET_URLS = {
+    heroConsole: chrome.runtime.getURL("assets/hero-console.png"),
+    emptyState: chrome.runtime.getURL("assets/empty-state.png"),
+    iconSheet: chrome.runtime.getURL("assets/icon-sheet.png"),
+    pageIllustrations: chrome.runtime.getURL("assets/page-illustrations.png"),
+    mobileTexture: chrome.runtime.getURL("assets/mobile-texture.png"),
+    floatingBall: chrome.runtime.getURL("assets/floating-ball.png"),
+    flowBadgeBg: chrome.runtime.getURL("assets/flow-badge-bg.png"),
+    navIcon0: chrome.runtime.getURL("assets/nav-icon-overview.png"),
+    navIcon1: chrome.runtime.getURL("assets/nav-icon-trace.png"),
+    navIcon2: chrome.runtime.getURL("assets/nav-icon-permission.png"),
+    navIcon3: chrome.runtime.getURL("assets/nav-icon-fullplay.png"),
+    navIcon4: chrome.runtime.getURL("assets/nav-icon-downloads.png"),
+    navIcon5: chrome.runtime.getURL("assets/nav-icon-accounts.png"),
+    navIcon6: chrome.runtime.getURL("assets/nav-icon-compare.png"),
+    navIcon7: chrome.runtime.getURL("assets/nav-icon-tools.png")
+  };
+  const EMPTY_STATE_IMAGE = ASSET_URLS.emptyState;
+
+  function cssImageUrl(url) {
+    return `url("${String(url).replace(/\\/g, "\\\\").replace(/"/g, '\\"')}")`;
+  }
+
+  function applyAssetVars(target) {
+    if (!target?.style) return;
+    target.style.setProperty("--txzz-hero-image", cssImageUrl(ASSET_URLS.heroConsole));
+    target.style.setProperty("--txzz-empty-image", cssImageUrl(ASSET_URLS.emptyState));
+    target.style.setProperty("--txzz-icon-sheet", cssImageUrl(ASSET_URLS.iconSheet));
+    target.style.setProperty("--txzz-page-illustrations", cssImageUrl(ASSET_URLS.pageIllustrations));
+    target.style.setProperty("--txzz-mobile-texture", cssImageUrl(ASSET_URLS.mobileTexture));
+    target.style.setProperty("--txzz-floating-ball", cssImageUrl(ASSET_URLS.floatingBall));
+    target.style.setProperty("--txzz-flow-badge-bg", cssImageUrl(ASSET_URLS.flowBadgeBg));
+    for (let index = 0; index < 8; index += 1) {
+      target.style.setProperty(`--txzz-nav-icon-${index}`, cssImageUrl(ASSET_URLS[`navIcon${index}`]));
+    }
+  }
+
+  function applyFlowBadgeVisual(target) {
+    if (!target?.style) return;
+    target.style.setProperty("--txzz-flow-badge-bg", cssImageUrl(ASSET_URLS.flowBadgeBg));
+    target.style.backgroundImage = `linear-gradient(90deg, rgba(15, 17, 25, 0.54), rgba(15, 17, 25, 0.68)), ${cssImageUrl(ASSET_URLS.flowBadgeBg)}`;
+    target.style.backgroundSize = "cover";
+    target.style.backgroundPosition = "center";
+  }
 
   const panel = document.createElement("section");
   panel.id = "txzz-panel";
   panel.className = "txzz-closed";
+  applyAssetVars(panel);
   panel.innerHTML = `
     <button class="txzz-ball" data-action="toggle" title="展开糖心志者" aria-label="展开糖心志者">
       <span>志</span>
     </button>
     <div class="txzz-toast" data-view="toast" aria-live="polite"></div>
     <div class="txzz-shell" role="dialog" aria-label="糖心志者功能管理面板">
-      <header class="txzz-head">
+      <aside class="txzz-sidebar">
         <div class="txzz-brand" data-drag-handle>
           <i>志</i>
           <div>
             <strong>糖心志者</strong>
-            <small data-view="subtitle">账号池、播放资源与下载任务管理</small>
+            <small data-view="subtitle">专业账号与资源控制台</small>
           </div>
         </div>
-        <div class="txzz-head-actions">
-          <button class="txzz-about-btn" data-action="about" title="打开项目主页" aria-label="打开项目主页">关于</button>
-          <button data-action="refresh" title="刷新状态" aria-label="刷新状态">刷</button>
-          <button data-action="close" title="关闭面板" aria-label="关闭面板">关</button>
+        <div class="txzz-side-status">
+          <span>当前账号</span>
+          <strong data-view="sideAccount">读取中</strong>
+          <small data-view="sideAccountMeta">等待页面会话</small>
         </div>
-      </header>
-      <main class="txzz-main">
-        <section class="txzz-hero">
-          <div>
-            <span>糖心志者 · 账号状态管理</span>
-            <strong>永久会员 · 永久尤物圈 · 999 余额</strong>
-            <small>集中管理账号池、播放资源、金币内容和下载任务。</small>
+        <nav class="txzz-tabs" aria-label="糖心志者页面导航">
+          <button class="is-active" data-tab="overview" data-icon="0"><i aria-hidden="true"></i><span>总览</span></button>
+          <button data-tab="trace" data-icon="1"><i aria-hidden="true"></i><span>资源</span></button>
+          <button data-tab="permission" data-icon="2"><i aria-hidden="true"></i><span>账号状态</span></button>
+          <button data-tab="fullplay" data-icon="3"><i aria-hidden="true"></i><span>播放详情</span></button>
+          <button data-tab="downloads" data-icon="4"><i aria-hidden="true"></i><span>下载</span></button>
+          <button data-tab="accounts" data-icon="5"><i aria-hidden="true"></i><span>账号池</span></button>
+          <button data-tab="compare" data-icon="6"><i aria-hidden="true"></i><span>对比</span></button>
+          <button data-tab="tools" data-icon="7"><i aria-hidden="true"></i><span>工具</span></button>
+        </nav>
+      </aside>
+      <section class="txzz-workspace">
+        <header class="txzz-head">
+          <div class="txzz-page-title">
+            <span>功能面板</span>
+            <strong data-view="pageTitle">总览</strong>
           </div>
-          <button class="txzz-primary" data-action="apply">应用展示覆盖</button>
-        </section>
-
-        <section class="txzz-grid">
-          <article>
-            <span>当前账号</span>
-            <strong data-view="account">读取中</strong>
-            <small data-view="accountMeta">等待页面会话</small>
-          </article>
-          <article>
-            <span>账号状态</span>
-            <strong data-view="rights">待应用</strong>
-            <small data-view="rightsMeta">会员 / 尤物圈 / 余额</small>
-          </article>
-          <article>
-            <span>账号池</span>
-            <strong data-view="poolCount">0</strong>
-            <small data-view="poolMeta">未选择账号</small>
-          </article>
-          <article>
-            <span>播放资源</span>
-            <strong data-view="fullplayCount">0</strong>
-            <small data-view="latestFullplay">等待记录</small>
-          </article>
-        </section>
-
-        <section class="txzz-tabs">
-          <button class="is-active" data-tab="trace">资源</button>
-          <button data-tab="permission">状态</button>
-          <button data-tab="fullplay">播放资源</button>
-          <button data-tab="downloads">下载</button>
-          <button data-tab="accounts">账号池</button>
-          <button data-tab="compare">对比</button>
-          <button data-tab="tools">工具</button>
-        </section>
-
-        <section class="txzz-view is-active" data-view-panel="trace">
-          <div class="txzz-flow" data-view="flow"></div>
-          <div class="txzz-section-head">
-            <strong>播放资源记录</strong>
-            <button data-action="copy-latest">复制最新播放链接</button>
+          <div class="txzz-head-actions">
+            <button class="txzz-about-btn" data-action="about" title="打开项目主页" aria-label="打开项目主页">关于</button>
+            <button data-action="refresh" title="刷新状态" aria-label="刷新状态">刷新</button>
+            <button data-action="close" title="关闭面板" aria-label="关闭面板">关闭</button>
           </div>
-          <div class="txzz-list" data-view="playback"></div>
-        </section>
-
-        <section class="txzz-view" data-view-panel="permission">
-          <div class="txzz-section-head">
-            <strong>账号状态与接口记录</strong>
-            <button data-action="copy-observations">复制接口记录</button>
-          </div>
-          <div class="txzz-list txzz-observations" data-view="observations"></div>
-        </section>
-
-        <section class="txzz-view" data-view-panel="fullplay">
-          <div class="txzz-section-head">
-            <strong>播放资源详情</strong>
-            <button data-action="copy-full-link">复制最近播放链接</button>
-          </div>
-          <div class="txzz-fullplay-card" data-view="fullplaySummary"></div>
-          <div class="txzz-list" data-view="fullplayList"></div>
-        </section>
-
-        <section class="txzz-view" data-view-panel="downloads">
-          <div class="txzz-download-hero">
-            <div>
-              <span>糖心志者 · 下载中枢</span>
-              <strong>管理视频任务、保存记录和下载目录</strong>
-              <small>实时显示下载任务状态，支持查看、复制、保存和清理。</small>
+        </header>
+        <button class="txzz-update-banner" data-action="show-update-dialog" data-view="updateBanner" hidden>
+          <span>发现更新</span>
+          <strong data-view="updateBannerTitle">远程仓库有新版本</strong>
+          <small data-view="updateBannerDetail">点击查看更新详情</small>
+        </button>
+        <main class="txzz-main">
+          <section class="txzz-view is-active" data-view-panel="overview">
+            <div class="txzz-overview-rail">
+              <article class="txzz-focus-card" data-page="overview">
+                <div>
+                  <span>账号展示</span>
+                  <strong>永久会员 · 永久尤物圈 · 999 余额</strong>
+                  <small data-view="rightsMeta">会员 / 尤物圈 / 余额</small>
+                </div>
+                <span class="txzz-page-art" data-art="overview" aria-hidden="true"></span>
+                <button class="txzz-primary" data-action="apply">应用展示覆盖</button>
+              </article>
+              <article class="txzz-flow-card">
+                <div class="txzz-section-head txzz-section-head-tight">
+                  <strong>最近流程</strong>
+                  <button data-tab="trace">查看资源</button>
+                </div>
+                <div class="txzz-flow" data-view="flow"></div>
+              </article>
             </div>
-            <button class="txzz-primary" data-action="refresh-downloads">刷新下载</button>
-          </div>
-          <div class="txzz-download-stats" data-view="downloadSummary"></div>
-          <div class="txzz-download-actions">
-            <button data-action="save-downloads">保存当前记录</button>
-            <button data-action="copy-downloads">复制下载数据</button>
-            <button data-action="open-download-folder">打开下载目录</button>
-            <button class="txzz-danger-action" data-action="clear-downloads">清空任务</button>
-          </div>
-          <div class="txzz-section-head">
-            <strong>当前任务</strong>
-            <small data-view="downloadMeta">等待下载任务</small>
-          </div>
-          <div class="txzz-download-list" data-view="downloadList"></div>
-          <div class="txzz-section-head">
-            <strong>保存记录</strong>
-            <button data-action="clear-download-snapshots">清空保存记录</button>
-          </div>
-          <div class="txzz-download-snapshots" data-view="downloadSnapshots"></div>
-        </section>
+            <section class="txzz-grid">
+              <article>
+                <span>当前账号</span>
+                <strong data-view="account">读取中</strong>
+                <small data-view="accountMeta">等待页面会话</small>
+              </article>
+              <article>
+                <span>账号状态</span>
+                <strong data-view="rights">待应用</strong>
+                <small>客户端展示状态</small>
+              </article>
+              <article>
+                <span>账号池</span>
+                <strong data-view="poolCount">0</strong>
+                <small data-view="poolMeta">未选择账号</small>
+              </article>
+              <article>
+                <span>播放资源</span>
+                <strong data-view="fullplayCount">0</strong>
+                <small data-view="latestFullplay">等待记录</small>
+              </article>
+            </section>
+            <section class="txzz-grid txzz-grid-secondary">
+              <article>
+                <span>下载任务</span>
+                <strong data-view="overviewDownloads">0</strong>
+                <small data-view="overviewDownloadMeta">等待下载任务</small>
+              </article>
+            </section>
+            <div class="txzz-quick-actions">
+              <button data-action="refresh">刷新状态</button>
+              <button data-action="sync-remote">同步云端</button>
+              <button data-action="refresh-downloads">刷新下载</button>
+              <button data-action="check-update">检查更新</button>
+            </div>
+          </section>
 
-        <section class="txzz-view" data-view-panel="accounts">
-          <div class="txzz-account-console">
-            <div class="txzz-account-topbar">
+          <section class="txzz-view" data-view-panel="trace">
+            <div class="txzz-page-card" data-page="trace">
               <div>
-                <strong>账号池控制台</strong>
-                <small data-view="accountPoolMeta">云端账号默认只显示可用账号</small>
+                <span>资源</span>
+                <strong>播放资源记录</strong>
+                <small>聚合播放接口、媒体源、M3U8、MP4 和切片记录。</small>
               </div>
-              <div class="txzz-account-top-actions">
-                <button type="button" class="txzz-primary" data-action="open-account-form">添加账号</button>
-                <button type="button" data-action="sync-remote">同步云端</button>
-                <button type="button" data-action="verify-account">检查本地</button>
-              </div>
+              <span class="txzz-page-art" data-art="trace" aria-hidden="true"></span>
+              <button data-action="copy-latest">复制最新播放链接</button>
             </div>
+            <div class="txzz-content-card">
+              <div class="txzz-section-head">
+                <strong>资源列表</strong>
+                <small>按捕获时间倒序显示</small>
+              </div>
+              <div class="txzz-list" data-view="playback"></div>
+            </div>
+          </section>
+
+          <section class="txzz-view" data-view-panel="permission">
+            <div class="txzz-page-card" data-page="permission">
+              <div>
+                <span>账号状态</span>
+                <strong>账号状态与接口记录</strong>
+                <small>集中查看余额、权限、购买和账号状态相关接口。</small>
+              </div>
+              <span class="txzz-page-art" data-art="permission" aria-hidden="true"></span>
+              <button data-action="copy-observations">复制接口记录</button>
+            </div>
+            <div class="txzz-content-card">
+              <div class="txzz-section-head">
+                <strong>接口记录</strong>
+                <small>状态接口、余额接口和权限判定</small>
+              </div>
+              <div class="txzz-list txzz-observations" data-view="observations"></div>
+            </div>
+          </section>
+
+          <section class="txzz-view" data-view-panel="fullplay">
+            <div class="txzz-page-card" data-page="fullplay">
+              <div>
+                <span>播放详情</span>
+                <strong>完整播放资源</strong>
+                <small>展示最近完整播放链路、分片统计和下载入口。</small>
+              </div>
+              <span class="txzz-page-art" data-art="fullplay" aria-hidden="true"></span>
+              <button data-action="copy-full-link">复制最近播放链接</button>
+            </div>
+            <div class="txzz-content-card">
+              <div class="txzz-fullplay-card" data-view="fullplaySummary"></div>
+              <div class="txzz-section-head">
+                <strong>历史详情</strong>
+                <small>按获取时间倒序显示</small>
+              </div>
+              <div class="txzz-list" data-view="fullplayList"></div>
+            </div>
+          </section>
+
+          <section class="txzz-view" data-view-panel="downloads">
+            <div class="txzz-page-card" data-page="downloads">
+              <div>
+                <span>下载</span>
+                <strong>下载任务管理</strong>
+                <small data-view="downloadMeta">等待下载任务</small>
+              </div>
+              <span class="txzz-page-art" data-art="downloads" aria-hidden="true"></span>
+              <button class="txzz-primary" data-action="refresh-downloads">刷新下载</button>
+            </div>
+            <div class="txzz-download-stats" data-view="downloadSummary"></div>
+            <div class="txzz-download-actions">
+              <button data-action="save-downloads">保存当前记录</button>
+              <button data-action="copy-downloads">复制下载数据</button>
+              <button data-action="open-download-folder">打开下载目录</button>
+              <button class="txzz-danger-action" data-action="clear-downloads">清空任务</button>
+            </div>
+            <div class="txzz-content-card">
+              <div class="txzz-section-head">
+                <strong>当前任务</strong>
+                <small>下载、合并、保存状态</small>
+              </div>
+              <div class="txzz-download-list" data-view="downloadList"></div>
+            </div>
+            <div class="txzz-content-card">
+              <div class="txzz-section-head">
+                <strong>保存记录</strong>
+                <button data-action="clear-download-snapshots">清空保存记录</button>
+              </div>
+              <div class="txzz-download-snapshots" data-view="downloadSnapshots"></div>
+            </div>
+          </section>
+
+          <section class="txzz-view" data-view-panel="accounts">
+            <div class="txzz-account-console">
+              <div class="txzz-page-card" data-page="accounts">
+                <div>
+                  <span>账号池</span>
+                  <strong>账号池控制台</strong>
+                  <small data-view="accountPoolMeta">云端账号默认只显示可用账号</small>
+                </div>
+                <span class="txzz-page-art" data-art="accounts" aria-hidden="true"></span>
+                <div class="txzz-account-top-actions">
+                  <button type="button" class="txzz-primary" data-action="open-account-form">添加账号</button>
+                  <button type="button" data-action="sync-remote">同步云端</button>
+                  <button type="button" data-action="verify-account">检查本地</button>
+                </div>
+              </div>
 
             <div class="txzz-account-summary" data-view="accountPoolSummary"></div>
 
@@ -292,34 +427,56 @@
         </section>
 
         <section class="txzz-view" data-view-panel="compare">
-          <div class="txzz-compare">
+          <div class="txzz-page-card" data-page="compare">
             <div>
-              <label>账号池资源 JSON</label>
-              <textarea data-field="fullTrace" spellcheck="false" placeholder="账号池侧导出的资源记录，或自动获取的播放详情"></textarea>
+              <span>对比</span>
+              <strong>资源对比工作台</strong>
+              <small>对比账号池侧资源和当前页面资源，快速定位播放链路差异。</small>
             </div>
-            <div>
-              <label>当前页面资源 JSON</label>
-              <textarea data-field="guestTrace" spellcheck="false" placeholder="当前页面自动生成，也可手动粘贴"></textarea>
-            </div>
+            <span class="txzz-page-art" data-art="compare" aria-hidden="true"></span>
+            <button data-action="compare">生成对比</button>
           </div>
-          <button data-action="compare">生成对比</button>
-          <pre data-view="compareResult">{}</pre>
+          <div class="txzz-content-card">
+            <div class="txzz-compare">
+              <div>
+                <label>账号池资源 JSON</label>
+                <textarea data-field="fullTrace" spellcheck="false" placeholder="账号池侧导出的资源记录，或自动获取的播放详情"></textarea>
+              </div>
+              <div>
+                <label>当前页面资源 JSON</label>
+                <textarea data-field="guestTrace" spellcheck="false" placeholder="当前页面自动生成，也可手动粘贴"></textarea>
+              </div>
+            </div>
+            <pre data-view="compareResult">{}</pre>
+          </div>
         </section>
 
         <section class="txzz-view" data-view-panel="tools">
-          <div class="txzz-tools">
-            <button data-action="set-role-full">账号池会话</button>
-            <button data-action="set-role-guest">当前页面会话</button>
-            <button data-action="load-saved">载入保存记录</button>
-            <button data-action="export">导出记录</button>
-            <button data-action="save">保存当前记录</button>
+          <div class="txzz-page-card" data-page="tools">
+            <div>
+              <span>工具</span>
+              <strong>运行工具箱</strong>
+              <small>管理会话角色、导出记录、检查更新和清理缓存。</small>
+            </div>
+            <span class="txzz-page-art" data-art="tools" aria-hidden="true"></span>
             <button data-action="check-update">检查更新</button>
-            <button data-action="clear">清空记录</button>
-            <button class="txzz-danger-action" data-action="clear-cache">清除数据缓存</button>
           </div>
-          <pre data-view="exportBox">{}</pre>
+          <div class="txzz-content-card">
+            <div class="txzz-tools">
+              <button data-action="set-role-full">账号池会话</button>
+              <button data-action="set-role-guest">当前页面会话</button>
+              <button data-action="load-saved">载入保存记录</button>
+              <button data-action="export">导出记录</button>
+              <button data-action="save">保存当前记录</button>
+              <button data-action="check-update">检查更新</button>
+              <button data-action="clear">清空记录</button>
+              <button class="txzz-danger-action" data-action="clear-cache">清除数据缓存</button>
+            </div>
+            <pre data-view="exportBox">{}</pre>
+          </div>
         </section>
-      </main>
+        </main>
+      </section>
     </div>
   `;
   document.documentElement.appendChild(panel);
@@ -329,12 +486,15 @@
   flowBadge.className = "txzz-flow-badge";
   flowBadge.setAttribute("aria-live", "polite");
   flowBadge.hidden = true;
+  applyAssetVars(flowBadge);
+  applyFlowBadgeVisual(flowBadge);
   document.documentElement.appendChild(flowBadge);
 
   const updateDialog = document.createElement("div");
   updateDialog.id = "txzz-update-dialog";
   updateDialog.className = "txzz-update-dialog";
   updateDialog.hidden = true;
+  applyAssetVars(updateDialog);
   updateDialog.innerHTML = `
     <div class="txzz-update-mask" data-update-action="dismiss"></div>
     <section class="txzz-update-card" role="dialog" aria-label="糖心志者更新提醒">
@@ -394,6 +554,7 @@
   let toastTimer = 0;
   let flowBadgeTimer = 0;
   let flowBadgeActive = false;
+  let repositoryUpdateCheckTask = null;
   const flowBadgeQueue = [];
   const downloadLocks = new Set();
   const announcedDownloadStages = new Set();
@@ -730,11 +891,17 @@
     return state.accountPool.some((item) => item.id === accountId && isCloudAccount(item));
   }
 
+  function isUsableCloudAccount(account = {}) {
+    if (!isCloudAccount(account)) return false;
+    const status = accountStatusInfo(account);
+    return Boolean(status.ok && (account.status === "ok" || account.status === "imported" || account.lastVerifiedAt));
+  }
+
   function visibleAccountPool() {
     return state.accountPool.filter((account) => {
       if (!isCloudAccount(account)) return true;
       if (uiState.showInvalidCloudAccounts) return true;
-      return accountStatusInfo(account).ok;
+      return isUsableCloudAccount(account);
     });
   }
 
@@ -742,7 +909,7 @@
     const accounts = state.accountPool || [];
     const cloud = accounts.filter(isCloudAccount);
     const local = accounts.filter((account) => !isCloudAccount(account));
-    const invalidCloud = cloud.filter((account) => !accountStatusInfo(account).ok);
+    const invalidCloud = cloud.filter((account) => !isUsableCloudAccount(account));
     return {
       total: accounts.length,
       cloud: cloud.length,
@@ -1217,6 +1384,16 @@
     }, 3600);
   }
 
+  function emptyState(title, detail = "等待新的运行数据") {
+    return `
+      <div class="txzz-empty">
+        <img src="${escapeHtml(EMPTY_STATE_IMAGE)}" alt="">
+        <b>${escapeHtml(title)}</b>
+        <span>${escapeHtml(detail)}</span>
+      </div>
+    `;
+  }
+
   function renderFlow() {
     views.flow.innerHTML = state.flow.slice(-8).map((item, index) => `
       <div class="txzz-step ${item.level === "ok" ? "is-ok" : item.level === "error" ? "is-error" : ""}">
@@ -1226,7 +1403,7 @@
           <span>${escapeHtml(item.detail)}</span>
         </div>
       </div>
-    `).join("") || `<div class="txzz-empty">等待流程记录</div>`;
+    `).join("") || emptyState("等待流程记录", "页面操作、账号池轮换和下载进度会显示在这里");
   }
 
   function renderStats() {
@@ -1239,6 +1416,13 @@
     views.fullplayCount.textContent = String(state.fullDetails.length);
     const latest = state.fullDetails[state.fullDetails.length - 1];
     views.latestFullplay.textContent = latest ? `${latest.movieId} / ${latest.action || "full_detail"}` : "等待记录";
+    const downloadStats = downloadTaskStats();
+    if (views.overviewDownloads) views.overviewDownloads.textContent = String(downloadStats.total);
+    if (views.overviewDownloadMeta) {
+      views.overviewDownloadMeta.textContent = downloadStats.total
+        ? `进行中 ${downloadStats.running} / 完成 ${downloadStats.completed} / 失败 ${downloadStats.failed}`
+        : "等待下载任务";
+    }
     publishState();
   }
 
@@ -1324,6 +1508,12 @@
   function renderDownloads() {
     const tasks = downloadTasksArray();
     const stats = downloadTaskStats(tasks);
+    if (views.overviewDownloads) views.overviewDownloads.textContent = String(stats.total);
+    if (views.overviewDownloadMeta) {
+      views.overviewDownloadMeta.textContent = stats.total
+        ? `进行中 ${stats.running} / 完成 ${stats.completed} / 失败 ${stats.failed}`
+        : "等待下载任务";
+    }
     if (views.downloadSummary) {
       views.downloadSummary.innerHTML = [
         ["总任务", stats.total],
@@ -1380,7 +1570,7 @@
             </div>
           </article>
         `;
-      }).join("") || `<div class="txzz-empty">还没有下载任务。进入视频详情页点击「下载」，或在「播放资源」页点击「下载视频」。</div>`;
+      }).join("") || emptyState("还没有下载任务", "进入视频详情页点击「下载」，或在「播放详情」页点击「下载视频」");
     }
     if (views.downloadSnapshots) {
       const snapshots = Array.isArray(state.downloadSnapshots) ? state.downloadSnapshots.slice().reverse() : [];
@@ -1394,7 +1584,7 @@
             <button data-action="copy-download-snapshot" data-snapshot-id="${escapeHtml(snapshot.id || "")}">复制记录</button>
           </div>
         </article>
-      `).join("") || `<div class="txzz-empty">暂无保存记录。点击「保存当前记录」后会在这里留档。</div>`;
+      `).join("") || emptyState("暂无保存记录", "点击「保存当前记录」后会在这里留档");
     }
   }
 
@@ -1421,6 +1611,8 @@
     const session = state.session || {};
     views.account.textContent = session.nickname || session.userId || "未读取";
     views.accountMeta.textContent = session.token ? `${labelForRole(state.role)} / ${session.tokenMasked}` : `${labelForRole(state.role)} / 等待 token`;
+    if (views.sideAccount) views.sideAccount.textContent = views.account.textContent;
+    if (views.sideAccountMeta) views.sideAccountMeta.textContent = views.accountMeta.textContent;
     views.rights.innerHTML = `
       <span>永久会员</span>
       <span>永久尤物圈</span>
@@ -1438,7 +1630,7 @@
         <span>${escapeHtml([item.via, item.status ? `HTTP ${item.status}` : "", item.method || ""].filter(Boolean).join(" / "))}</span>
         <code>${escapeHtml(item.url || "")}</code>
       </article>
-    `).join("") || `<div class="txzz-empty">打开视频详情或播放页后，这里会显示 M3U8、MP4、播放接口与媒体源。</div>`;
+    `).join("") || emptyState("等待播放资源", "打开视频详情或播放页后会显示 M3U8、MP4、播放接口与媒体源");
   }
 
   function renderObservations() {
@@ -1449,7 +1641,7 @@
         <code>${escapeHtml(item.url || "")}</code>
         ${item.bodyHead ? `<p>${escapeHtml(clipText(item.bodyHead, 260))}</p>` : ""}
       </article>
-    `).join("") || `<div class="txzz-empty">还没有记录购买、金币、余额或账号状态接口。</div>`;
+    `).join("") || emptyState("等待账号状态记录", "购买、金币、余额或账号状态接口会显示在这里");
   }
 
   function renderAccounts() {
@@ -1537,7 +1729,10 @@
           </div>
         </article>
       `;
-    }).join("") || `<div class="txzz-empty">${stats.invalidCloud && !uiState.showInvalidCloudAccounts ? "当前没有可显示账号，已隐藏失效云端账号；可打开「查看已失效云端账号」。" : "账号池为空，请点击「添加账号」保存本地账号，或同步云端账号池。"}</div>`;
+    }).join("") || emptyState(
+      stats.invalidCloud && !uiState.showInvalidCloudAccounts ? "已隐藏失效云端账号" : "账号池为空",
+      stats.invalidCloud && !uiState.showInvalidCloudAccounts ? "打开「查看已失效云端账号」后可查看待检查或不可用账号" : "点击「添加账号」保存本地账号，或同步云端账号池"
+    );
   }
 
   function renderFullDetails() {
@@ -1553,7 +1748,7 @@
         <strong>${escapeHtml(latest.fullStat?.segments ?? "?")} 片</strong>
         <small>${escapeHtml(latest.fullStat?.duration ? `${latest.fullStat.duration}s` : latest.fullStat?.error || "等待统计")}</small>
       </div>
-    ` : `<div class="txzz-empty">等待页面记录 /movie/detail。</div>`;
+    ` : emptyState("等待播放详情", "打开视频详情页后会记录完整播放资源");
     views.fullplayList.innerHTML = state.fullDetails.slice(-24).reverse().map((item) => `
       <article>
         <b>${escapeHtml(item.movieId)} 路 ${escapeHtml(item.action || "full_detail")}</b>
@@ -1564,7 +1759,7 @@
           <button data-action="download-full-video" data-movie-id="${escapeHtml(item.movieId || "")}">下载视频</button>
         </div>
       </article>
-    `).join("") || `<div class="txzz-empty">还没有播放详情记录。</div>`;
+    `).join("") || emptyState("还没有播放详情记录", "获取完整播放资源后会在这里展示");
     renderStats();
   }
 
@@ -1770,9 +1965,31 @@
     window.open("https://github.com/lsy5920/tangxin-zhizhe-extension", "_blank", "noopener,noreferrer");
   }
 
+  function renderRepositoryUpdateBanner(update = uiState.repositoryUpdate) {
+    const banner = views.updateBanner;
+    if (!banner) return;
+    const remote = update?.remote || {};
+    const hasUpdate = Boolean(update?.updateAvailable && remote.id);
+    banner.hidden = !hasUpdate;
+    if (!hasUpdate) return;
+    const versionText = remote.version ? `版本 ${remote.version}` : remote.time || "发现更新";
+    const buildText = remote.build ? ` / 构建 ${remote.build}` : "";
+    if (views.updateBannerTitle) views.updateBannerTitle.textContent = `${versionText}${buildText}`;
+    if (views.updateBannerDetail) {
+      views.updateBannerDetail.textContent = remote.title || remote.detail || remote.line || "点击查看更新详情";
+    }
+  }
+
+  function rememberRepositoryUpdate(update = null) {
+    const hasUpdate = Boolean(update?.updateAvailable && update?.remote?.id);
+    uiState.repositoryUpdate = hasUpdate ? update : null;
+    renderRepositoryUpdateBanner(uiState.repositoryUpdate);
+    return hasUpdate;
+  }
+
   function showRepositoryUpdateDialog(update = {}) {
     const remote = update.remote || {};
-    uiState.repositoryUpdate = update;
+    rememberRepositoryUpdate(update);
     const versionText = remote.version ? `版本 ${remote.version}` : remote.time || "最新版本";
     const buildText = remote.build ? ` / 构建 ${remote.build}` : "";
     if (views.updateTitle) views.updateTitle.textContent = `${versionText}${buildText}`;
@@ -1787,7 +2004,6 @@
     }
     views.updateDialog.hidden = false;
     views.updateDialog.classList.add("is-open");
-    sendRuntime("markRepositoryUpdateNotified", { updateId: remote.id || "", mode: "notified" }).catch(() => {});
     emitFlow("更新提醒", "远程仓库发现新的版本清单", "ok");
   }
 
@@ -1800,22 +2016,35 @@
     }
   }
 
-  async function checkRepositoryUpdate(force = false) {
-    try {
-      const response = await sendRuntime("checkRepositoryUpdate", { force });
-      if (response.shouldNotify) showRepositoryUpdateDialog(response);
-      else if (force) {
-        emitFlow(
-          "更新提醒",
-          response.updateAvailable ? "发现新版本，但这次更新已经提醒过" : "当前已是最新版本",
-          "ok"
-        );
+  async function checkRepositoryUpdate(force = false, options = {}) {
+    const showDialog = options.showDialog ?? Boolean(force);
+    const silent = Boolean(options.silent);
+    if (repositoryUpdateCheckTask) return repositoryUpdateCheckTask;
+    repositoryUpdateCheckTask = (async () => {
+      try {
+        const response = await sendRuntime("checkRepositoryUpdate", { force });
+        const hasUpdate = rememberRepositoryUpdate(response);
+        if (hasUpdate && showDialog) showRepositoryUpdateDialog(response);
+        else if (force && !silent) {
+          emitFlow("更新提醒", "当前已是最新版本", "ok");
+        }
+        return response;
+      } catch (err) {
+        if (!silent) emitFlow("更新检查失败", err?.message || String(err), "error");
+        return { ok: false, error: err?.message || String(err) };
+      } finally {
+        repositoryUpdateCheckTask = null;
       }
-      return response;
-    } catch (err) {
-      emitFlow("更新检查失败", err?.message || String(err), "error");
-      return { ok: false, error: err?.message || String(err) };
+    })();
+    return repositoryUpdateCheckTask;
+  }
+
+  function remindRepositoryUpdateOnPanelOpen() {
+    if (uiState.repositoryUpdate?.updateAvailable) {
+      window.setTimeout(() => showRepositoryUpdateDialog(uiState.repositoryUpdate), 120);
+      return;
     }
+    checkRepositoryUpdate(false, { showDialog: true, silent: true }).catch(() => {});
   }
 
   function syncSavedState(saved) {
@@ -2169,12 +2398,14 @@
       shell.style.removeProperty("--txzz-top");
       collectSession().catch(() => {});
       loadSavedState(false).catch(() => {});
+      remindRepositoryUpdateOnPanelOpen();
     }
   }
 
   function switchTab(tab) {
     panel.querySelectorAll("[data-tab]").forEach((button) => button.classList.toggle("is-active", button.dataset.tab === tab));
     panel.querySelectorAll("[data-view-panel]").forEach((view) => view.classList.toggle("is-active", view.dataset.viewPanel === tab));
+    if (views.pageTitle) views.pageTitle.textContent = PAGE_TITLES[tab] || "功能面板";
   }
 
   panel.addEventListener("click", async (event) => {
@@ -2287,6 +2518,10 @@
       }
       if (action === "clear-cache") await clearDataCache();
       if (action === "check-update") await checkRepositoryUpdate(true);
+      if (action === "show-update-dialog") {
+        if (uiState.repositoryUpdate?.updateAvailable) showRepositoryUpdateDialog(uiState.repositoryUpdate);
+        else await checkRepositoryUpdate(true);
+      }
       if (action === "compare") await compareTraces();
     } catch (err) {
       emitFlow("操作失败", err?.message || String(err), "error");
@@ -2560,7 +2795,7 @@
   applyDisplayPatch().catch(() => {});
   installVisibleDisplayLoop();
   loadSavedState(false).catch((err) => emitFlow("账号池", err?.message || String(err), "error"));
-  window.setTimeout(() => checkRepositoryUpdate(true).catch(() => {}), 1800);
+  window.setTimeout(() => checkRepositoryUpdate(false, { showDialog: false, silent: true }).catch(() => {}), 1800);
   window.setInterval(() => {
     if (Object.keys(state.downloadTasks || {}).length) {
       refreshLocalDownloadState().catch(() => {});

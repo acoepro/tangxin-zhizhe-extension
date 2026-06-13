@@ -33,7 +33,7 @@ const REPOSITORY_CONFIG = {
   timeoutMs: 9000
 };
 
-const LOCAL_UPDATE_BUILD = "2026-06-13-0924";
+const LOCAL_UPDATE_BUILD = "2026-06-13-1342";
 
 const FALLBACK_LOCAL_CHANGELOG_HEAD = "2026-06-13 02:23 【新增】新增远程仓库更新日志检查能力，插件会自动对比 GitHub README 更新日志，发现新记录时弹出精美更新提醒并可跳转项目主页。";
 
@@ -1603,8 +1603,18 @@ async function checkRepositoryUpdate(options = {}) {
   const stored = await chrome.storage.local.get("txzzUpdateState");
   const updateState = stored.txzzUpdateState || {};
   const now = Date.now();
-  if (!options.force && updateState.lastCheckedAt && now - Number(updateState.lastCheckedAt || 0) < REPOSITORY_CONFIG.checkIntervalMs) {
-    return { ok: true, skipped: true, updateAvailable: false, updateState };
+  const cached = updateState.lastUpdateResult || {};
+  const cacheMatchesLocal = cached.local?.version === localExtensionVersion() && cached.local?.build === LOCAL_UPDATE_BUILD;
+  if (!options.force && cacheMatchesLocal && updateState.lastCheckedAt && now - Number(updateState.lastCheckedAt || 0) < REPOSITORY_CONFIG.checkIntervalMs) {
+    return {
+      ok: true,
+      skipped: true,
+      fromCache: true,
+      updateAvailable: Boolean(cached.updateAvailable),
+      shouldNotify: Boolean(cached.updateAvailable),
+      ...cached,
+      updateState
+    };
   }
   try {
     const remoteManifest = await fetchRemoteUpdateManifest({ force: Boolean(options.force) });
@@ -1612,7 +1622,7 @@ async function checkRepositoryUpdate(options = {}) {
     const localBuild = LOCAL_UPDATE_BUILD;
     const updateAvailable = shouldUpdateByManifest(remoteManifest, localVersion, localBuild);
     const updateId = remoteManifest.id || `${remoteManifest.version}|${remoteManifest.build}`;
-    const shouldNotify = Boolean(updateAvailable && updateState.dismissedId !== updateId && updateState.notifiedId !== updateId);
+    const shouldNotify = Boolean(updateAvailable);
     const latest = remoteManifest.latest || {};
     const remote = {
       id: updateId,
@@ -1626,24 +1636,28 @@ async function checkRepositoryUpdate(options = {}) {
       build: remoteManifest.build,
       releasedAt: remoteManifest.releasedAt
     };
-    const nextUpdateState = {
-      ...updateState,
-      lastCheckedAt: now,
-      lastRemoteId: updateId,
-      lastRemoteLine: remote.line,
-      lastUpdateManifestUrl: REPOSITORY_CONFIG.updateManifestUrl
-    };
-    await chrome.storage.local.set({ txzzUpdateState: nextUpdateState });
-    return {
-      ok: true,
-      skipped: false,
+    const result = {
       source: "update.json",
       updateAvailable,
       shouldNotify,
       repositoryUrl: remoteManifest.homepage || REPOSITORY_CONFIG.url,
       local: { version: localVersion, build: localBuild },
       remote,
-      updateManifest: remoteManifest,
+      updateManifest: remoteManifest
+    };
+    const nextUpdateState = {
+      ...updateState,
+      lastCheckedAt: now,
+      lastRemoteId: updateId,
+      lastRemoteLine: remote.line,
+      lastUpdateManifestUrl: REPOSITORY_CONFIG.updateManifestUrl,
+      lastUpdateResult: result
+    };
+    await chrome.storage.local.set({ txzzUpdateState: nextUpdateState });
+    return {
+      ok: true,
+      skipped: false,
+      ...result,
       updateState: nextUpdateState
     };
   } catch (manifestErr) {
@@ -1658,18 +1672,8 @@ async function checkRepositoryUpdate(options = {}) {
   const remote = remoteEntries.find((entry) => !localIds.has(entry.id)) || null;
   if (!remoteEntries.length) throw new Error("远程 README 没有解析到更新日志");
   const updateAvailable = Boolean(remote);
-  const shouldNotify = Boolean(updateAvailable && remote && updateState.dismissedId !== remote.id && updateState.notifiedId !== remote.id);
-  const nextUpdateState = {
-    ...updateState,
-    lastCheckedAt: now,
-    lastRemoteId: remoteEntries[0]?.id || "",
-    lastRemoteLine: remoteEntries[0]?.line || "",
-    lastReadmeUrl: remoteReadme.url
-  };
-  await chrome.storage.local.set({ txzzUpdateState: nextUpdateState });
-  return {
-    ok: true,
-    skipped: false,
+  const shouldNotify = Boolean(updateAvailable && remote);
+  const result = {
     updateAvailable,
     shouldNotify,
     repositoryUrl: REPOSITORY_CONFIG.url,
@@ -1678,7 +1682,21 @@ async function checkRepositoryUpdate(options = {}) {
     remote,
     remoteHead: remoteEntries[0] || null,
     remoteCount: remoteEntries.length,
-    readmeUrl: remoteReadme.url,
+    readmeUrl: remoteReadme.url
+  };
+  const nextUpdateState = {
+    ...updateState,
+    lastCheckedAt: now,
+    lastRemoteId: remoteEntries[0]?.id || "",
+    lastRemoteLine: remoteEntries[0]?.line || "",
+    lastReadmeUrl: remoteReadme.url,
+    lastUpdateResult: result
+  };
+  await chrome.storage.local.set({ txzzUpdateState: nextUpdateState });
+  return {
+    ok: true,
+    skipped: false,
+    ...result,
     updateState: nextUpdateState
   };
 }
