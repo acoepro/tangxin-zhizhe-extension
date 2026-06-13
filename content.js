@@ -692,6 +692,17 @@
       "未命名账号";
   }
 
+  function isNonAccountFailureReason(reason = "") {
+    const text = String(reason || "");
+    return /当前视频已经下架|视频已经下架|播放详情未返回可播放链接|购买后播放详情未返回|购买后仍显示未购买|\/movie\/detail failed|movie\/detail failed|\/movie\/doBuy failed|movie\/doBuy failed|\/system\/menu did not return visitor token|system\/menu did not return visitor token|fetch failed|network|timeout/i.test(text);
+  }
+
+  function isCredentialFailureReason(reason = "") {
+    const text = String(reason || "");
+    if (!text || isNonAccountFailureReason(text)) return false;
+    return /账号没有可用凭据|account has no usable credential|授权过期|saved token invalid|账号身份不匹配|账号密码登录失败|account login failed|账号凭证找回失败|qrcode restore failed|\/user\/info failed|user\/info failed|findByAccount|findQrcode/i.test(text);
+  }
+
   function accountStatusInfo(account = {}) {
     if (account.enabled === false) {
       return { ok: false, label: "不可用", tone: "bad", reason: "账号已停用" };
@@ -704,6 +715,12 @@
       return { ok: true, label: "可用", tone: "good", reason: account.lastVerifiedAt ? `上次检查 ${account.lastVerifiedAt}` : "账号状态正常" };
     }
     if (account.status === "error") {
+      const reason = account.lastError || "最近一次检查失败";
+      const hasTrustedHistory = Boolean(account.lastVerifiedAt || account.userInfo);
+      if (hasTrustedHistory && !isCredentialFailureReason(reason)) {
+        const detail = isNonAccountFailureReason(reason) ? "最近失败来自视频资源或临时接口，不是账号失效" : "账号曾成功检查，建议稍后复查";
+        return { ok: true, label: "可用", tone: "good", reason: `${detail}：${clipText(reason, 90)}` };
+      }
       return { ok: false, label: "不可用", tone: "bad", reason: account.lastError || "最近一次检查失败" };
     }
     if (account.status === "imported") {
@@ -813,7 +830,7 @@
   function isUsableCloudAccount(account = {}) {
     if (!isCloudAccount(account)) return false;
     const status = accountStatusInfo(account);
-    return Boolean(status.ok && (account.status === "ok" || account.status === "imported" || account.lastVerifiedAt));
+    return Boolean(status.ok && (account.status === "ok" || account.status === "imported" || account.lastVerifiedAt || account.userInfo));
   }
 
   function visibleAccountPool() {
