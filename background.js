@@ -24,6 +24,7 @@ const REPOSITORY_CONFIG = {
   owner: "lsy5920",
   repo: "tangxin-zhizhe-extension",
   url: "https://github.com/lsy5920/tangxin-zhizhe-extension",
+  updateManifestUrl: "https://raw.githubusercontent.com/lsy5920/tangxin-zhizhe-extension/main/update.json",
   readmeUrls: [
     "https://raw.githubusercontent.com/lsy5920/tangxin-zhizhe-extension/main/README.md",
     "https://raw.githubusercontent.com/lsy5920/tangxin-zhizhe-extension/master/README.md"
@@ -31,6 +32,8 @@ const REPOSITORY_CONFIG = {
   checkIntervalMs: 6 * 60 * 60 * 1000,
   timeoutMs: 9000
 };
+
+const LOCAL_UPDATE_BUILD = "2026-06-13-0924";
 
 const FALLBACK_LOCAL_CHANGELOG_HEAD = "2026-06-13 02:23 【新增】新增远程仓库更新日志检查能力，插件会自动对比 GitHub README 更新日志，发现新记录时弹出精美更新提醒并可跳转项目主页。";
 
@@ -1495,6 +1498,68 @@ function compareChangelogTime(a = {}, b = {}) {
   return String(a.line || "").localeCompare(String(b.line || ""), "zh-CN");
 }
 
+function parseVersionParts(version = "") {
+  return String(version || "")
+    .split(".")
+    .map((item) => Number.parseInt(item.replace(/[^\d]/g, ""), 10))
+    .map((item) => Number.isFinite(item) ? item : 0);
+}
+
+function compareVersions(a = "", b = "") {
+  const av = parseVersionParts(a);
+  const bv = parseVersionParts(b);
+  const len = Math.max(av.length, bv.length, 3);
+  for (let i = 0; i < len; i += 1) {
+    const diff = (av[i] || 0) - (bv[i] || 0);
+    if (diff !== 0) return diff;
+  }
+  return 0;
+}
+
+function localExtensionVersion() {
+  try {
+    return chrome.runtime.getManifest()?.version || "";
+  } catch (_) {
+    return "";
+  }
+}
+
+function normalizeRemoteUpdateManifest(raw = {}) {
+  const changelog = Array.isArray(raw.changelog) ? raw.changelog : [];
+  const latest = changelog[0] || {};
+  const version = String(raw.version || "").trim();
+  const build = String(raw.build || "").trim();
+  return {
+    schema: Number(raw.schema || 1),
+    name: String(raw.name || "糖心志者"),
+    version,
+    build,
+    releasedAt: String(raw.releasedAt || ""),
+    homepage: String(raw.homepage || REPOSITORY_CONFIG.url),
+    changelog,
+    latest,
+    id: [version, build, latest.id || latest.title || ""].filter(Boolean).join("|")
+  };
+}
+
+async function fetchRemoteUpdateManifest(options = {}) {
+  const url = options.force
+    ? `${REPOSITORY_CONFIG.updateManifestUrl}?txzz_update=${Date.now()}`
+    : REPOSITORY_CONFIG.updateManifestUrl;
+  const text = await fetchTextWithTimeout(url);
+  const parsed = JSON.parse(text);
+  const manifest = normalizeRemoteUpdateManifest(parsed);
+  if (!manifest.version || !manifest.build) throw new Error("远程 update.json 缺少 version 或 build");
+  return manifest;
+}
+
+function shouldUpdateByManifest(remote = {}, localVersion = localExtensionVersion(), localBuild = LOCAL_UPDATE_BUILD) {
+  const versionDiff = compareVersions(remote.version, localVersion);
+  if (versionDiff > 0) return true;
+  if (versionDiff < 0) return false;
+  return Boolean(remote.build && remote.build !== localBuild);
+}
+
 async function fetchTextWithTimeout(url, timeoutMs = REPOSITORY_CONFIG.timeoutMs) {
   const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
   const timer = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
@@ -1540,6 +1605,50 @@ async function checkRepositoryUpdate(options = {}) {
   const now = Date.now();
   if (!options.force && updateState.lastCheckedAt && now - Number(updateState.lastCheckedAt || 0) < REPOSITORY_CONFIG.checkIntervalMs) {
     return { ok: true, skipped: true, updateAvailable: false, updateState };
+  }
+  try {
+    const remoteManifest = await fetchRemoteUpdateManifest({ force: Boolean(options.force) });
+    const localVersion = localExtensionVersion();
+    const localBuild = LOCAL_UPDATE_BUILD;
+    const updateAvailable = shouldUpdateByManifest(remoteManifest, localVersion, localBuild);
+    const updateId = remoteManifest.id || `${remoteManifest.version}|${remoteManifest.build}`;
+    const shouldNotify = Boolean(updateAvailable && updateState.dismissedId !== updateId && updateState.notifiedId !== updateId);
+    const latest = remoteManifest.latest || {};
+    const remote = {
+      id: updateId,
+      line: `${remoteManifest.releasedAt || remoteManifest.build} 【${latest.type || "更新"}】${latest.title || "发现新版本"}`,
+      time: remoteManifest.releasedAt || "",
+      type: `【${latest.type || "更新"}】`,
+      text: latest.detail || latest.title || "远程版本清单已发布新版本。",
+      title: latest.title || "发现新版本",
+      detail: latest.detail || "",
+      version: remoteManifest.version,
+      build: remoteManifest.build,
+      releasedAt: remoteManifest.releasedAt
+    };
+    const nextUpdateState = {
+      ...updateState,
+      lastCheckedAt: now,
+      lastRemoteId: updateId,
+      lastRemoteLine: remote.line,
+      lastUpdateManifestUrl: REPOSITORY_CONFIG.updateManifestUrl
+    };
+    await chrome.storage.local.set({ txzzUpdateState: nextUpdateState });
+    return {
+      ok: true,
+      skipped: false,
+      source: "update.json",
+      updateAvailable,
+      shouldNotify,
+      repositoryUrl: remoteManifest.homepage || REPOSITORY_CONFIG.url,
+      local: { version: localVersion, build: localBuild },
+      remote,
+      updateManifest: remoteManifest,
+      updateState: nextUpdateState
+    };
+  } catch (manifestErr) {
+    if (options.manifestOnly) throw manifestErr;
+    updateState.lastManifestError = manifestErr?.message || String(manifestErr);
   }
   const localEntries = await getLocalChangelogEntries();
   const local = localEntries[0] || null;

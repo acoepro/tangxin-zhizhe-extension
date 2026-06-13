@@ -341,7 +341,7 @@
       <div class="txzz-update-icon">志</div>
       <div class="txzz-update-body">
         <span>糖心志者发现新版本</span>
-        <strong data-update-view="title">远程仓库有新的更新日志</strong>
+        <strong data-update-view="title">远程仓库有新的版本清单</strong>
         <p data-update-view="detail">点击查看项目仓库，获取最新版本和说明。</p>
         <code data-update-view="line"></code>
         <div class="txzz-update-actions">
@@ -1773,12 +1773,22 @@
   function showRepositoryUpdateDialog(update = {}) {
     const remote = update.remote || {};
     uiState.repositoryUpdate = update;
-    if (views.updateTitle) views.updateTitle.textContent = `${remote.time || "最新"} ${remote.type || "【更新】"}`;
-    if (views.updateDetail) views.updateDetail.textContent = remote.text || "远程仓库已有新的更新日志，建议前往项目主页获取最新版本。";
-    if (views.updateLine) views.updateLine.textContent = remote.line || "";
+    const versionText = remote.version ? `版本 ${remote.version}` : remote.time || "最新版本";
+    const buildText = remote.build ? ` / 构建 ${remote.build}` : "";
+    if (views.updateTitle) views.updateTitle.textContent = `${versionText}${buildText}`;
+    if (views.updateDetail) views.updateDetail.textContent = remote.detail || remote.text || remote.title || "远程仓库已有新的版本清单，建议前往项目主页获取最新版本。";
+    if (views.updateLine) {
+      views.updateLine.textContent = [
+        remote.releasedAt ? `发布时间：${remote.releasedAt}` : "",
+        remote.type || "",
+        remote.title || "",
+        remote.line && !remote.version ? remote.line : ""
+      ].filter(Boolean).join(" / ");
+    }
     views.updateDialog.hidden = false;
     views.updateDialog.classList.add("is-open");
-    emitFlow("更新提醒", "远程仓库发现新的更新日志", "ok");
+    sendRuntime("markRepositoryUpdateNotified", { updateId: remote.id || "", mode: "notified" }).catch(() => {});
+    emitFlow("更新提醒", "远程仓库发现新的版本清单", "ok");
   }
 
   async function closeRepositoryUpdateDialog(mode = "dismissed") {
@@ -1797,7 +1807,7 @@
       else if (force) {
         emitFlow(
           "更新提醒",
-          response.updateAvailable ? "发现更新日志，但这条更新已经提醒过" : "当前插件 README 已包含远程仓库更新日志",
+          response.updateAvailable ? "发现新版本，但这次更新已经提醒过" : "当前已是最新版本",
           "ok"
         );
       }

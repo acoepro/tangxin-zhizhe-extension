@@ -35,7 +35,7 @@
 - 下载管理：接管视频详情页下载按钮，创建后台下载任务。
 - MP4 输出：M3U8 分片下载完成后优先转封装为真实 MP4，失败时保留 TS 兜底。
 - 数据清理：支持一键清除旧版本缓存、账号池缓存、播放资源缓存和页面运行缓存。
-- 更新提醒：自动对比远程仓库 README 更新日志，发现新日志后弹出更新提醒，点击可打开 GitHub 项目主页；工具页也提供「检查更新」按钮。
+- 更新提醒：优先读取远程仓库 `update.json` 版本清单，对比版本号、构建号和最新日志 ID；读取失败时自动降级为 README 更新日志对比；工具页提供「检查更新」按钮。
 - 移动端适配：手机视图下顶部栏固定，内部内容独立滚动。
 
 ## 项目目录结构
@@ -52,6 +52,7 @@ tangxin-zhizhe-extension/
 ├── page_probe.js              # 页面会话和用户状态探针
 ├── offscreen.html             # 离屏下载页面
 ├── offscreen_downloader.js    # M3U8 分片下载、合并、转封装和保存逻辑
+├── update.json                # 远程更新提醒版本清单模板
 ├── vendor/
 │   └── mux-7.0.0.min.js       # 固定版本 mux.js，用于 TS 转 MP4
 └── README.md                  # 当前插件文档
@@ -274,6 +275,14 @@ node -e "JSON.parse(require('fs').readFileSync('.\\tangxin-zhizhe-extension\\man
 3. 如果希望每次选择位置，请在浏览器下载设置中开启「下载前询问保存位置」。
 4. 如果插件显示 TS 兜底，说明 MP4 转封装失败但文件仍可保存。
 
+### 检查更新没有弹窗
+
+1. 确认当前安装的插件版本已经包含更新检查功能，旧到完全没有该功能的版本无法自动提醒。
+2. 确认远程仓库默认分支存在 `update.json`，地址为 `https://raw.githubusercontent.com/lsy5920/tangxin-zhizhe-extension/main/update.json`。
+3. 远程 `version` 大于本地 `manifest.json` 的 `version` 时会提醒；版本相同但 `build` 不同时也会提醒。
+4. 同一个 `version + build + changelog[0].id` 已经提醒过后不会重复弹窗，可通过插件的「清除数据缓存」重新验证。
+5. GitHub raw 访问失败时不会弹窗，只会在左上角流程提示中显示更新检查失败。
+
 ## 安全与隐私
 
 - 不要把账号密码、二维码凭证、token、deviceId 写入插件源码。
@@ -321,3 +330,4 @@ node -e "JSON.parse(require('fs').readFileSync('.\\tangxin-zhizhe-extension\\man
 2026-06-13 09:10 【新增】写入远程更新提醒测试日志，用于验证插件对比 GitHub README 更新日志后弹出更新提醒。
 2026-06-13 09:18 【优化】更新提醒启动时强制实时检查远程 README，工具页新增「检查更新」按钮，便于推送新日志后立即验证弹窗。
 2026-06-13 09:24 【新增】写入第二条远程更新提醒测试日志，用于验证远程 README 出现新增记录时插件弹窗提醒是否正常。
+2026-06-13 09:44 【优化】更新提醒改为优先读取远程 `update.json` 版本清单，对比版本号、构建号和日志 ID；README 更新日志对比保留为备用方案。

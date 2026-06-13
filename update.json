@@ -1,0 +1,16 @@
+{
+  "schema": 1,
+  "name": "糖心志者",
+  "version": "1.3.2",
+  "build": "2026-06-13-0924",
+  "releasedAt": "2026-06-13 09:24",
+  "homepage": "https://github.com/lsy5920/tangxin-zhizhe-extension",
+  "changelog": [
+    {
+      "id": "2026-06-13-0924",
+      "type": "新增",
+      "title": "远程更新提醒测试日志",
+      "detail": "用于验证插件发现远程版本清单更新后弹出提醒。"
+    }
+  ]
+}
