@@ -1,16 +1,16 @@
 {
   "schema": 1,
   "name": "糖心志者",
-  "version": "2.0.3",
-  "build": "2026-06-13-1358",
-  "releasedAt": "2026-06-13 13:58",
+  "version": "2.1.0",
+  "build": "2026-06-13-1420",
+  "releasedAt": "2026-06-13 14:20",
   "homepage": "https://github.com/lsy5920/tangxin-zhizhe-extension",
   "changelog": [
     {
-      "id": "2026-06-13-1358",
-      "type": "新增",
-      "title": "测试下载功能",
-      "detail": "测试下载功能。"
+      "id": "2026-06-13-1420",
+      "type": "优化",
+      "title": "精简插件功能界面",
+      "detail": "移除调试页和重复入口，保留账号池、播放、下载、更新和设置。"
     }
   ]
 }

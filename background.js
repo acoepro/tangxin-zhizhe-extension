@@ -34,9 +34,9 @@ const REPOSITORY_CONFIG = {
   timeoutMs: 9000
 };
 
-const LOCAL_UPDATE_BUILD = "2026-06-13-1358";
+const LOCAL_UPDATE_BUILD = "2026-06-13-1420";
 
-const FALLBACK_LOCAL_CHANGELOG_HEAD = "2026-06-13 13:58 【新增】测试下载功能。";
+const FALLBACK_LOCAL_CHANGELOG_HEAD = "2026-06-13 14:20 【优化】精简插件功能界面，移除调试页和重复入口，保留账号池、播放、下载、更新和设置。";
 
 const DEFAULT_ACCOUNTS = [
   {

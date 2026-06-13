@@ -43,13 +43,10 @@
   const OBSERVATION_CATEGORIES = new Set(["purchase-api", "payment-api", "balance-api", "permission-api", "fullplay", "account"]);
   const PAGE_TITLES = {
     overview: "总览",
-    trace: "播放资源",
-    permission: "账号状态",
-    fullplay: "播放详情",
-    downloads: "下载管理",
     accounts: "账号池",
-    compare: "资源对比",
-    tools: "工具"
+    fullplay: "播放",
+    downloads: "下载管理",
+    tools: "设置"
   };
   const ASSET_URLS = {
     heroConsole: chrome.runtime.getURL("assets/hero-console.png"),
@@ -111,7 +108,7 @@
           <i>志</i>
           <div>
             <strong>糖心志者</strong>
-            <small data-view="subtitle">专业账号与资源控制台</small>
+            <small data-view="subtitle">账号池、播放与下载管理</small>
           </div>
         </div>
         <div class="txzz-side-status">
@@ -121,13 +118,10 @@
         </div>
         <nav class="txzz-tabs" aria-label="糖心志者页面导航">
           <button class="is-active" data-tab="overview" data-icon="0"><i aria-hidden="true"></i><span>总览</span></button>
-          <button data-tab="trace" data-icon="1"><i aria-hidden="true"></i><span>资源</span></button>
-          <button data-tab="permission" data-icon="2"><i aria-hidden="true"></i><span>账号状态</span></button>
-          <button data-tab="fullplay" data-icon="3"><i aria-hidden="true"></i><span>播放详情</span></button>
-          <button data-tab="downloads" data-icon="4"><i aria-hidden="true"></i><span>下载</span></button>
           <button data-tab="accounts" data-icon="5"><i aria-hidden="true"></i><span>账号池</span></button>
-          <button data-tab="compare" data-icon="6"><i aria-hidden="true"></i><span>对比</span></button>
-          <button data-tab="tools" data-icon="7"><i aria-hidden="true"></i><span>工具</span></button>
+          <button data-tab="fullplay" data-icon="3"><i aria-hidden="true"></i><span>播放</span></button>
+          <button data-tab="downloads" data-icon="4"><i aria-hidden="true"></i><span>下载</span></button>
+          <button data-tab="tools" data-icon="7"><i aria-hidden="true"></i><span>设置</span></button>
         </nav>
       </aside>
       <section class="txzz-workspace">
@@ -152,9 +146,9 @@
             <div class="txzz-overview-rail">
               <article class="txzz-focus-card" data-page="overview">
                 <div>
-                  <span>账号展示</span>
-                  <strong>永久会员 · 永久尤物圈 · 999 余额</strong>
-                  <small data-view="rightsMeta">会员 / 尤物圈 / 余额</small>
+                  <span>糖心志者</span>
+                  <strong>账号池管理 · 播放状态展示 · 下载任务管理 · 版本更新</strong>
+                  <small data-view="rightsMeta">当前状态读取中</small>
                 </div>
                 <span class="txzz-page-art" data-art="overview" aria-hidden="true"></span>
                 <button class="txzz-primary" data-action="apply">应用展示覆盖</button>
@@ -162,7 +156,7 @@
               <article class="txzz-flow-card">
                 <div class="txzz-section-head txzz-section-head-tight">
                   <strong>最近流程</strong>
-                  <button data-tab="trace">查看资源</button>
+                  <button data-tab="fullplay">查看播放</button>
                 </div>
                 <div class="txzz-flow" data-view="flow"></div>
               </article>
@@ -174,7 +168,7 @@
                 <small data-view="accountMeta">等待页面会话</small>
               </article>
               <article>
-                <span>账号状态</span>
+                <span>页面展示</span>
                 <strong data-view="rights">待应用</strong>
                 <small>客户端展示状态</small>
               </article>
@@ -184,7 +178,7 @@
                 <small data-view="poolMeta">未选择账号</small>
               </article>
               <article>
-                <span>播放资源</span>
+                <span>播放记录</span>
                 <strong data-view="fullplayCount">0</strong>
                 <small data-view="latestFullplay">等待记录</small>
               </article>
@@ -204,58 +198,20 @@
             </div>
           </section>
 
-          <section class="txzz-view" data-view-panel="trace">
-            <div class="txzz-page-card" data-page="trace">
-              <div>
-                <span>资源</span>
-                <strong>播放资源记录</strong>
-                <small>聚合播放接口、媒体源、M3U8、MP4 和切片记录。</small>
-              </div>
-              <span class="txzz-page-art" data-art="trace" aria-hidden="true"></span>
-              <button data-action="copy-latest">复制最新播放链接</button>
-            </div>
-            <div class="txzz-content-card">
-              <div class="txzz-section-head">
-                <strong>资源列表</strong>
-                <small>按捕获时间倒序显示</small>
-              </div>
-              <div class="txzz-list" data-view="playback"></div>
-            </div>
-          </section>
-
-          <section class="txzz-view" data-view-panel="permission">
-            <div class="txzz-page-card" data-page="permission">
-              <div>
-                <span>账号状态</span>
-                <strong>账号状态与接口记录</strong>
-                <small>集中查看余额、权限、购买和账号状态相关接口。</small>
-              </div>
-              <span class="txzz-page-art" data-art="permission" aria-hidden="true"></span>
-              <button data-action="copy-observations">复制接口记录</button>
-            </div>
-            <div class="txzz-content-card">
-              <div class="txzz-section-head">
-                <strong>接口记录</strong>
-                <small>状态接口、余额接口和权限判定</small>
-              </div>
-              <div class="txzz-list txzz-observations" data-view="observations"></div>
-            </div>
-          </section>
-
           <section class="txzz-view" data-view-panel="fullplay">
             <div class="txzz-page-card" data-page="fullplay">
               <div>
-                <span>播放详情</span>
-                <strong>完整播放资源</strong>
-                <small>展示最近完整播放链路、分片统计和下载入口。</small>
+                <span>播放</span>
+                <strong>播放状态与下载入口</strong>
+                <small>展示最近视频、播放状态和下载入口。</small>
               </div>
               <span class="txzz-page-art" data-art="fullplay" aria-hidden="true"></span>
-              <button data-action="copy-full-link">复制最近播放链接</button>
+              <button class="txzz-primary" data-action="download-full-video">下载当前视频</button>
             </div>
             <div class="txzz-content-card">
               <div class="txzz-fullplay-card" data-view="fullplaySummary"></div>
               <div class="txzz-section-head">
-                <strong>历史详情</strong>
+                <strong>播放记录</strong>
                 <small>按获取时间倒序显示</small>
               </div>
               <div class="txzz-list" data-view="fullplayList"></div>
@@ -274,8 +230,6 @@
             </div>
             <div class="txzz-download-stats" data-view="downloadSummary"></div>
             <div class="txzz-download-actions">
-              <button data-action="save-downloads">保存当前记录</button>
-              <button data-action="copy-downloads">复制下载数据</button>
               <button data-action="open-download-folder">打开下载目录</button>
               <button class="txzz-danger-action" data-action="clear-downloads">清空任务</button>
             </div>
@@ -285,13 +239,6 @@
                 <small>下载、合并、保存状态</small>
               </div>
               <div class="txzz-download-list" data-view="downloadList"></div>
-            </div>
-            <div class="txzz-content-card">
-              <div class="txzz-section-head">
-                <strong>保存记录</strong>
-                <button data-action="clear-download-snapshots">清空保存记录</button>
-              </div>
-              <div class="txzz-download-snapshots" data-view="downloadSnapshots"></div>
             </div>
           </section>
 
@@ -426,53 +373,23 @@
           </div>
         </section>
 
-        <section class="txzz-view" data-view-panel="compare">
-          <div class="txzz-page-card" data-page="compare">
-            <div>
-              <span>对比</span>
-              <strong>资源对比工作台</strong>
-              <small>对比账号池侧资源和当前页面资源，快速定位播放链路差异。</small>
-            </div>
-            <span class="txzz-page-art" data-art="compare" aria-hidden="true"></span>
-            <button data-action="compare">生成对比</button>
-          </div>
-          <div class="txzz-content-card">
-            <div class="txzz-compare">
-              <div>
-                <label>账号池资源 JSON</label>
-                <textarea data-field="fullTrace" spellcheck="false" placeholder="账号池侧导出的资源记录，或自动获取的播放详情"></textarea>
-              </div>
-              <div>
-                <label>当前页面资源 JSON</label>
-                <textarea data-field="guestTrace" spellcheck="false" placeholder="当前页面自动生成，也可手动粘贴"></textarea>
-              </div>
-            </div>
-            <pre data-view="compareResult">{}</pre>
-          </div>
-        </section>
-
         <section class="txzz-view" data-view-panel="tools">
           <div class="txzz-page-card" data-page="tools">
             <div>
-              <span>工具</span>
-              <strong>运行工具箱</strong>
-              <small>管理会话角色、导出记录、检查更新和清理缓存。</small>
+              <span>设置</span>
+              <strong>设置与更新</strong>
+              <small>管理版本更新、缓存清理和项目主页。</small>
             </div>
             <span class="txzz-page-art" data-art="tools" aria-hidden="true"></span>
             <button data-action="check-update">检查更新</button>
           </div>
           <div class="txzz-content-card">
             <div class="txzz-tools">
-              <button data-action="set-role-full">账号池会话</button>
-              <button data-action="set-role-guest">当前页面会话</button>
-              <button data-action="load-saved">载入保存记录</button>
-              <button data-action="export">导出记录</button>
-              <button data-action="save">保存当前记录</button>
+              <button data-action="refresh">刷新状态</button>
+              <button data-action="about">关于项目</button>
               <button data-action="check-update">检查更新</button>
-              <button data-action="clear">清空记录</button>
               <button class="txzz-danger-action" data-action="clear-cache">清除数据缓存</button>
             </div>
-            <pre data-view="exportBox">{}</pre>
           </div>
         </section>
         </main>
@@ -1625,6 +1542,7 @@
   }
 
   function renderPlayback() {
+    if (!views.playback) return;
     views.playback.innerHTML = state.playback.slice(-28).reverse().map((item) => `
       <article>
         <b>${escapeHtml(categoryLabel(item.category))}</b>
@@ -1635,6 +1553,7 @@
   }
 
   function renderObservations() {
+    if (!views.observations) return;
     views.observations.innerHTML = state.observations.slice(-32).reverse().map((item) => `
       <article>
         <b>${escapeHtml(categoryLabel(item.category))}</b>
@@ -1738,7 +1657,8 @@
 
   function renderFullDetails() {
     const latest = state.fullDetails[state.fullDetails.length - 1];
-    views.fullplaySummary.innerHTML = latest ? `
+    if (views.fullplaySummary) {
+      views.fullplaySummary.innerHTML = latest ? `
       <div>
         <span>最近记录</span>
         <strong>${escapeHtml(latest.movieId || "")}</strong>
@@ -1750,7 +1670,9 @@
         <small>${escapeHtml(latest.fullStat?.duration ? `${latest.fullStat.duration}s` : latest.fullStat?.error || "等待统计")}</small>
       </div>
     ` : emptyState("等待播放详情", "打开视频详情页后会记录完整播放资源");
-    views.fullplayList.innerHTML = state.fullDetails.slice(-24).reverse().map((item) => `
+    }
+    if (views.fullplayList) {
+      views.fullplayList.innerHTML = state.fullDetails.slice(-24).reverse().map((item) => `
       <article>
         <b>${escapeHtml(item.movieId)} 路 ${escapeHtml(item.action || "full_detail")}</b>
         <span>${escapeHtml([item.accountLabel || item.accountUser, item.fullStat?.segments ? `${item.fullStat.segments} 片` : "", item.fullStat?.duration ? `${item.fullStat.duration}s` : ""].filter(Boolean).join(" / "))}</span>
@@ -1761,6 +1683,7 @@
         </div>
       </article>
     `).join("") || emptyState("还没有播放详情记录", "获取完整播放资源后会在这里展示");
+    }
     renderStats();
   }
 
@@ -1896,10 +1819,12 @@
   }
 
   async function compareTraces() {
-    const full = fields.fullTrace.value.trim() ? parseMaybeJson(fields.fullTrace.value.trim()) : { fullDetails: state.fullDetails };
-    const guest = fields.guestTrace.value.trim() ? parseMaybeJson(fields.guestTrace.value.trim()) : await exportTrace();
+    const fullText = fields.fullTrace?.value?.trim?.() || "";
+    const guestText = fields.guestTrace?.value?.trim?.() || "";
+    const full = fullText ? parseMaybeJson(fullText) : { fullDetails: state.fullDetails };
+    const guest = guestText ? parseMaybeJson(guestText) : await exportTrace();
     if (!full || typeof full !== "object") {
-      views.compareResult.textContent = JSON.stringify({ error: "请先粘贴账号池资源 JSON" }, null, 2);
+      if (views.compareResult) views.compareResult.textContent = JSON.stringify({ error: "请先粘贴账号池资源 JSON" }, null, 2);
       emitFlow("资源对比", "缺少账号池资源 JSON", "error");
       return;
     }
@@ -1917,7 +1842,7 @@
         ? "当前页面缺少账号池播放资源；优先确认视频详情接口是否已返回可用资源。"
         : "播放资源没有明显缺口；继续观察 HLS 分片、Referer、有效期和播放器实际时长。"
     };
-    views.compareResult.textContent = JSON.stringify(result, null, 2);
+    if (views.compareResult) views.compareResult.textContent = JSON.stringify(result, null, 2);
     emitFlow("资源对比", `账号池 ${fullLinks.size} 条，当前页面 ${guestLinks.size} 条，共享 ${shared.length} 条`, "ok");
   }
 
@@ -2080,9 +2005,9 @@
     const response = await sendRuntime("getState");
     const saved = response.state || {};
     syncSavedState(saved);
-    if (saved.lastFullTrace) fields.fullTrace.value = JSON.stringify(saved.lastFullTrace, null, 2);
-    if (saved.lastGuestTrace) fields.guestTrace.value = JSON.stringify(saved.lastGuestTrace, null, 2);
-    views.exportBox.textContent = JSON.stringify(saved, null, 2);
+    if (saved.lastFullTrace && fields.fullTrace) fields.fullTrace.value = JSON.stringify(saved.lastFullTrace, null, 2);
+    if (saved.lastGuestTrace && fields.guestTrace) fields.guestTrace.value = JSON.stringify(saved.lastGuestTrace, null, 2);
+    if (views.exportBox) views.exportBox.textContent = JSON.stringify(saved, null, 2);
     if (verbose) emitFlow("载入记录", "已读取扩展本地保存记录与账号池", "ok");
     publishState();
     return saved;
@@ -2112,9 +2037,9 @@
     state.accountPool = Array.isArray(saved.accountPool) ? saved.accountPool : [];
     state.selectedFullAccountId = saved.selectedFullAccountId || state.accountPool[0]?.id || "";
     state.remote = saved.remote || null;
-    fields.fullTrace.value = "";
-    fields.guestTrace.value = "";
-    views.exportBox.textContent = "{}";
+    if (fields.fullTrace) fields.fullTrace.value = "";
+    if (fields.guestTrace) fields.guestTrace.value = "";
+    if (views.exportBox) views.exportBox.textContent = "{}";
     renderPlayback();
     renderObservations();
     renderFlow();
@@ -2404,9 +2329,10 @@
   }
 
   function switchTab(tab) {
-    panel.querySelectorAll("[data-tab]").forEach((button) => button.classList.toggle("is-active", button.dataset.tab === tab));
-    panel.querySelectorAll("[data-view-panel]").forEach((view) => view.classList.toggle("is-active", view.dataset.viewPanel === tab));
-    if (views.pageTitle) views.pageTitle.textContent = PAGE_TITLES[tab] || "功能面板";
+    const targetTab = PAGE_TITLES[tab] ? tab : "overview";
+    panel.querySelectorAll("[data-tab]").forEach((button) => button.classList.toggle("is-active", button.dataset.tab === targetTab));
+    panel.querySelectorAll("[data-view-panel]").forEach((view) => view.classList.toggle("is-active", view.dataset.viewPanel === targetTab));
+    if (views.pageTitle) views.pageTitle.textContent = PAGE_TITLES[targetTab] || "功能面板";
   }
 
   panel.addEventListener("click", async (event) => {
@@ -2495,15 +2421,15 @@
       if (action === "import-current-session") await importCurrentSession();
       if (action === "export") {
         const trace = await exportTrace();
-        views.exportBox.textContent = JSON.stringify(trace, null, 2);
-        if (state.role === "guest") fields.guestTrace.value = JSON.stringify(trace, null, 2);
-        if (state.role === "full") fields.fullTrace.value = JSON.stringify(trace, null, 2);
+        if (views.exportBox) views.exportBox.textContent = JSON.stringify(trace, null, 2);
+        if (state.role === "guest" && fields.guestTrace) fields.guestTrace.value = JSON.stringify(trace, null, 2);
+        if (state.role === "full" && fields.fullTrace) fields.fullTrace.value = JSON.stringify(trace, null, 2);
         emitFlow("导出记录", `已导出 ${trace.playback.length} 条播放记录，${trace.observations.length} 条接口记录`, "ok");
       }
       if (action === "save") {
         const trace = await exportTrace();
         await sendRuntime("saveTrace", trace);
-        views.exportBox.textContent = JSON.stringify(trace, null, 2);
+        if (views.exportBox) views.exportBox.textContent = JSON.stringify(trace, null, 2);
         emitFlow("保存记录", "已保存到扩展本地存储", "ok");
       }
       if (action === "clear") {
@@ -2514,7 +2440,7 @@
         renderPlayback();
         renderObservations();
         renderFlow();
-        views.exportBox.textContent = "{}";
+        if (views.exportBox) views.exportBox.textContent = "{}";
         emitFlow("清空", "已清空当前会话捕获记录", "ok");
       }
       if (action === "clear-cache") await clearDataCache();
