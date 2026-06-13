@@ -34,9 +34,9 @@ const REPOSITORY_CONFIG = {
   timeoutMs: 9000
 };
 
-const LOCAL_UPDATE_BUILD = "2026-06-13-1352";
+const LOCAL_UPDATE_BUILD = "2026-06-13-1358";
 
-const FALLBACK_LOCAL_CHANGELOG_HEAD = "2026-06-13 13:52 【新增】糖心志者升级到 2.0.2，用于测试更新弹窗直接下载仓库最新压缩包功能。";
+const FALLBACK_LOCAL_CHANGELOG_HEAD = "2026-06-13 13:58 【新增】测试下载功能。";
 
 const DEFAULT_ACCOUNTS = [
   {
