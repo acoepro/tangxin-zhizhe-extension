@@ -22,10 +22,8 @@
         "https://txh068.com/*"
       ],
       "js": [
-        "content.js"
-      ],
-      "css": [
-        "content.css"
+        "content.js",
+        "dist-ui/txzz-ui.js"
       ],
       "run_at": "document_start"
     }
@@ -40,27 +38,9 @@
         "page_hook.js",
         "page_probe.js",
         "display_patch.js",
+        "dist-ui/txzz-ui.css",
         "README.md",
         "update.json",
-        "assets/hero-console.png",
-        "assets/empty-state.png",
-        "assets/icon-sheet.png",
-        "assets/ui-layout-pc.png",
-        "assets/ui-layout-mobile.png",
-        "assets/page-illustrations.png",
-        "assets/nav-icons.png",
-        "assets/nav-icons-square.png",
-        "assets/nav-icon-overview.png",
-        "assets/nav-icon-trace.png",
-        "assets/nav-icon-permission.png",
-        "assets/nav-icon-fullplay.png",
-        "assets/nav-icon-downloads.png",
-        "assets/nav-icon-accounts.png",
-        "assets/nav-icon-compare.png",
-        "assets/nav-icon-tools.png",
-        "assets/floating-ball.png",
-        "assets/flow-badge-bg.png",
-        "assets/mobile-texture.png",
         "vendor/mux-7.0.0.min.js"
       ],
       "matches": [

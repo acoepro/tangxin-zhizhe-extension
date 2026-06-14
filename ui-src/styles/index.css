@@ -1,0 +1,153 @@
+@import "tailwindcss";
+@import "./theme.css";
+
+:host {
+  all: initial;
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647;
+  display: block;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  color-scheme: light;
+  --radius: 0.625rem;
+  --radius-xl: 0.875rem;
+  --radius-2xl: 1rem;
+  --radius-3xl: 1.5rem;
+  font-family: "Microsoft YaHei", "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC", Arial, sans-serif;
+}
+
+#txzz-candy-ui {
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+}
+
+#txzz-candy-ui *,
+#txzz-candy-ui *::before,
+#txzz-candy-ui *::after {
+  box-sizing: border-box;
+}
+
+#txzz-candy-ui button,
+#txzz-candy-ui input,
+#txzz-candy-ui textarea,
+#txzz-candy-ui select {
+  font: inherit;
+}
+
+.txzz-candy-app {
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  font-family: inherit;
+}
+
+.txzz-candy-interactive {
+  pointer-events: auto;
+}
+
+#txzz-candy-ui .rounded-xl {
+  border-radius: 0.875rem !important;
+}
+
+#txzz-candy-ui .rounded-2xl {
+  border-radius: 1rem !important;
+}
+
+#txzz-candy-ui .rounded-3xl {
+  border-radius: 1.5rem !important;
+}
+
+#txzz-candy-ui .rounded-full {
+  border-radius: 9999px !important;
+}
+
+#txzz-candy-ui .bg-gradient-to-br.from-pink-50.via-purple-50.to-violet-50 {
+  background-image: linear-gradient(135deg, #fdf2f8 0%, #faf5ff 50%, #f5f3ff 100%) !important;
+}
+
+#txzz-candy-ui .bg-gradient-to-r.from-pink-500.to-purple-600 {
+  background-image: linear-gradient(90deg, #ec4899 0%, #9333ea 100%) !important;
+}
+
+#txzz-candy-ui .bg-gradient-to-br.from-pink-400.via-rose-400.to-purple-600 {
+  background-image: linear-gradient(135deg, #f472b6 0%, #fb7185 50%, #9333ea 100%) !important;
+}
+
+#txzz-candy-ui .bg-gradient-to-b.from-pink-400.via-rose-400.to-purple-600 {
+  background-image: linear-gradient(180deg, #f472b6 0%, #fb7185 50%, #9333ea 100%) !important;
+}
+
+#txzz-candy-ui .bg-gradient-to-br.from-pink-400.to-purple-600 {
+  background-image: linear-gradient(135deg, #f472b6 0%, #9333ea 100%) !important;
+}
+
+#txzz-candy-ui .bg-gradient-to-br.from-pink-400.to-purple-500 {
+  background-image: linear-gradient(135deg, #f472b6 0%, #a855f7 100%) !important;
+}
+
+#txzz-candy-ui .bg-gradient-to-br.from-pink-400.via-purple-400.to-violet-500 {
+  background-image: linear-gradient(135deg, #f472b6 0%, #c084fc 50%, #8b5cf6 100%) !important;
+}
+
+#txzz-candy-ui .bg-gradient-to-r.from-pink-400.to-rose-400,
+#txzz-candy-ui .bg-gradient-to-br.from-pink-400.to-rose-400 {
+  background-image: linear-gradient(135deg, #f472b6 0%, #fb7185 100%) !important;
+}
+
+#txzz-candy-ui .bg-gradient-to-r.from-purple-400.to-violet-400,
+#txzz-candy-ui .bg-gradient-to-br.from-purple-400.to-violet-400 {
+  background-image: linear-gradient(135deg, #c084fc 0%, #a78bfa 100%) !important;
+}
+
+#txzz-candy-ui .bg-gradient-to-r.from-sky-400.to-blue-400,
+#txzz-candy-ui .bg-gradient-to-br.from-sky-400.to-blue-400 {
+  background-image: linear-gradient(135deg, #38bdf8 0%, #60a5fa 100%) !important;
+}
+
+#txzz-candy-ui .bg-gradient-to-r.from-amber-400.to-orange-400,
+#txzz-candy-ui .bg-gradient-to-br.from-amber-400.to-orange-400 {
+  background-image: linear-gradient(135deg, #fbbf24 0%, #fb923c 100%) !important;
+}
+
+#txzz-candy-ui .bg-gradient-to-br.from-purple-400.to-violet-500 {
+  background-image: linear-gradient(135deg, #c084fc 0%, #8b5cf6 100%) !important;
+}
+
+#txzz-candy-ui .bg-gradient-to-br.from-pink-400.via-rose-400.to-purple-500 {
+  background-image: linear-gradient(135deg, #f472b6 0%, #fb7185 50%, #a855f7 100%) !important;
+}
+
+#txzz-candy-ui .bg-gradient-to-r.from-sky-400.to-blue-500 {
+  background-image: linear-gradient(90deg, #38bdf8 0%, #3b82f6 100%) !important;
+}
+
+#txzz-candy-ui .bg-gradient-to-r.from-purple-400.to-violet-500 {
+  background-image: linear-gradient(90deg, #c084fc 0%, #8b5cf6 100%) !important;
+}
+
+#txzz-candy-ui .bg-gradient-to-r.from-pink-400.to-purple-500 {
+  background-image: linear-gradient(90deg, #f472b6 0%, #a855f7 100%) !important;
+}
+
+#txzz-candy-ui .bg-gradient-to-r.from-pink-400.to-purple-400 {
+  background-image: linear-gradient(90deg, #f472b6 0%, #c084fc 100%) !important;
+}
+
+#txzz-candy-ui .bg-gradient-to-r.from-rose-400.to-pink-500 {
+  background-image: linear-gradient(90deg, #fb7185 0%, #ec4899 100%) !important;
+}
+
+#txzz-candy-ui .bg-gradient-to-r.from-pink-50.to-purple-50 {
+  background-image: linear-gradient(90deg, #fdf2f8 0%, #faf5ff 100%) !important;
+}
+
+#txzz-candy-ui .bg-gradient-to-br.from-emerald-400.to-sky-500 {
+  background-image: linear-gradient(135deg, #34d399 0%, #0ea5e9 100%) !important;
+}
+
+#txzz-candy-ui .bg-gradient-to-br.from-rose-400.to-pink-500 {
+  background-image: linear-gradient(135deg, #fb7185 0%, #ec4899 100%) !important;
+}

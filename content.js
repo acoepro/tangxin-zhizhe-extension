@@ -48,399 +48,67 @@
     downloads: "下载管理",
     tools: "设置"
   };
-  const ASSET_URLS = {
-    heroConsole: chrome.runtime.getURL("assets/hero-console.png"),
-    emptyState: chrome.runtime.getURL("assets/empty-state.png"),
-    iconSheet: chrome.runtime.getURL("assets/icon-sheet.png"),
-    pageIllustrations: chrome.runtime.getURL("assets/page-illustrations.png"),
-    mobileTexture: chrome.runtime.getURL("assets/mobile-texture.png"),
-    floatingBall: chrome.runtime.getURL("assets/floating-ball.png"),
-    flowBadgeBg: chrome.runtime.getURL("assets/flow-badge-bg.png"),
-    navIcon0: chrome.runtime.getURL("assets/nav-icon-overview.png"),
-    navIcon1: chrome.runtime.getURL("assets/nav-icon-trace.png"),
-    navIcon2: chrome.runtime.getURL("assets/nav-icon-permission.png"),
-    navIcon3: chrome.runtime.getURL("assets/nav-icon-fullplay.png"),
-    navIcon4: chrome.runtime.getURL("assets/nav-icon-downloads.png"),
-    navIcon5: chrome.runtime.getURL("assets/nav-icon-accounts.png"),
-    navIcon6: chrome.runtime.getURL("assets/nav-icon-compare.png"),
-    navIcon7: chrome.runtime.getURL("assets/nav-icon-tools.png")
-  };
-  const EMPTY_STATE_IMAGE = ASSET_URLS.emptyState;
-
-  function cssImageUrl(url) {
-    return `url("${String(url).replace(/\\/g, "\\\\").replace(/"/g, '\\"')}")`;
+  function createVirtualNode() {
+    const style = {
+      setProperty() {},
+      removeProperty() {}
+    };
+    const classList = {
+      add() {},
+      remove() {},
+      toggle() { return false; },
+      contains() { return false; }
+    };
+    const node = {
+      dataset: {},
+      style,
+      classList,
+      hidden: true,
+      value: "",
+      checked: false,
+      disabled: false,
+      title: "",
+      textContent: "",
+      innerHTML: "",
+      className: "",
+      type: "",
+      setAttribute() {},
+      removeAttribute() {},
+      addEventListener() {},
+      removeEventListener() {},
+      querySelector() { return node; },
+      querySelectorAll() { return []; },
+      closest() { return null; },
+      focus() {},
+      getBoundingClientRect() {
+        return { left: 0, top: 0, right: 0, bottom: 0, width: 0, height: 0 };
+      },
+      get offsetWidth() { return 0; },
+      get offsetHeight() { return 0; }
+    };
+    return node;
   }
 
-  function applyAssetVars(target) {
-    if (!target?.style) return;
-    target.style.setProperty("--txzz-hero-image", cssImageUrl(ASSET_URLS.heroConsole));
-    target.style.setProperty("--txzz-empty-image", cssImageUrl(ASSET_URLS.emptyState));
-    target.style.setProperty("--txzz-icon-sheet", cssImageUrl(ASSET_URLS.iconSheet));
-    target.style.setProperty("--txzz-page-illustrations", cssImageUrl(ASSET_URLS.pageIllustrations));
-    target.style.setProperty("--txzz-mobile-texture", cssImageUrl(ASSET_URLS.mobileTexture));
-    target.style.setProperty("--txzz-floating-ball", cssImageUrl(ASSET_URLS.floatingBall));
-    target.style.setProperty("--txzz-flow-badge-bg", cssImageUrl(ASSET_URLS.flowBadgeBg));
-    for (let index = 0; index < 8; index += 1) {
-      target.style.setProperty(`--txzz-nav-icon-${index}`, cssImageUrl(ASSET_URLS[`navIcon${index}`]));
-    }
+  function createVirtualMap() {
+    const target = Object.create(null);
+    return new Proxy(target, {
+      get(map, prop) {
+        if (typeof prop === "symbol") return map[prop];
+        if (!(prop in map)) map[prop] = createVirtualNode();
+        return map[prop];
+      },
+      set(map, prop, value) {
+        map[prop] = value;
+        return true;
+      }
+    });
   }
 
-  function applyFlowBadgeVisual(target) {
-    if (!target?.style) return;
-    target.style.setProperty("--txzz-flow-badge-bg", cssImageUrl(ASSET_URLS.flowBadgeBg));
-    target.style.backgroundImage = `linear-gradient(90deg, rgba(15, 17, 25, 0.54), rgba(15, 17, 25, 0.68)), ${cssImageUrl(ASSET_URLS.flowBadgeBg)}`;
-    target.style.backgroundSize = "cover";
-    target.style.backgroundPosition = "center";
-  }
-
-  const panel = document.createElement("section");
-  panel.id = "txzz-panel";
-  panel.className = "txzz-closed";
-  applyAssetVars(panel);
-  panel.innerHTML = `
-    <button class="txzz-ball" data-action="toggle" title="展开糖心志者" aria-label="展开糖心志者">
-      <span>志</span>
-    </button>
-    <div class="txzz-toast" data-view="toast" aria-live="polite"></div>
-    <div class="txzz-shell" role="dialog" aria-label="糖心志者功能管理面板">
-      <aside class="txzz-sidebar">
-        <div class="txzz-brand" data-drag-handle>
-          <i>志</i>
-          <div>
-            <strong>糖心志者</strong>
-            <small data-view="subtitle">账号池、播放与下载管理</small>
-          </div>
-        </div>
-        <div class="txzz-side-status">
-          <span>当前账号</span>
-          <strong data-view="sideAccount">读取中</strong>
-          <small data-view="sideAccountMeta">等待页面会话</small>
-        </div>
-        <nav class="txzz-tabs" aria-label="糖心志者页面导航">
-          <button class="is-active" data-tab="overview" data-icon="0"><i aria-hidden="true"></i><span>总览</span></button>
-          <button data-tab="accounts" data-icon="5"><i aria-hidden="true"></i><span>账号池</span></button>
-          <button data-tab="fullplay" data-icon="3"><i aria-hidden="true"></i><span>播放</span></button>
-          <button data-tab="downloads" data-icon="4"><i aria-hidden="true"></i><span>下载</span></button>
-          <button data-tab="tools" data-icon="7"><i aria-hidden="true"></i><span>设置</span></button>
-        </nav>
-      </aside>
-      <section class="txzz-workspace">
-        <header class="txzz-head">
-          <div class="txzz-page-title">
-            <span>功能面板</span>
-            <strong data-view="pageTitle">总览</strong>
-          </div>
-          <div class="txzz-head-actions">
-            <button class="txzz-about-btn" data-action="about" title="打开项目主页" aria-label="打开项目主页">关于</button>
-            <button data-action="refresh" title="刷新状态" aria-label="刷新状态">刷新</button>
-            <button data-action="close" title="关闭面板" aria-label="关闭面板">关闭</button>
-          </div>
-        </header>
-        <button class="txzz-update-banner" data-action="show-update-dialog" data-view="updateBanner" hidden>
-          <span>发现更新</span>
-          <strong data-view="updateBannerTitle">远程仓库有新版本</strong>
-          <small data-view="updateBannerDetail">点击查看更新详情</small>
-        </button>
-        <main class="txzz-main">
-          <section class="txzz-view is-active" data-view-panel="overview">
-            <div class="txzz-overview-rail">
-              <article class="txzz-focus-card" data-page="overview">
-                <div>
-                  <span>糖心志者</span>
-                  <strong>账号池管理 · 播放状态展示 · 下载任务管理 · 版本更新</strong>
-                  <small data-view="rightsMeta">当前状态读取中</small>
-                </div>
-                <span class="txzz-page-art" data-art="overview" aria-hidden="true"></span>
-                <button class="txzz-primary" data-action="apply">应用展示覆盖</button>
-              </article>
-              <article class="txzz-flow-card">
-                <div class="txzz-section-head txzz-section-head-tight">
-                  <strong>最近流程</strong>
-                  <button data-tab="fullplay">查看播放</button>
-                </div>
-                <div class="txzz-flow" data-view="flow"></div>
-              </article>
-            </div>
-            <section class="txzz-grid">
-              <article>
-                <span>当前账号</span>
-                <strong data-view="account">读取中</strong>
-                <small data-view="accountMeta">等待页面会话</small>
-              </article>
-              <article>
-                <span>页面展示</span>
-                <strong data-view="rights">待应用</strong>
-                <small>客户端展示状态</small>
-              </article>
-              <article>
-                <span>账号池</span>
-                <strong data-view="poolCount">0</strong>
-                <small data-view="poolMeta">未选择账号</small>
-              </article>
-              <article>
-                <span>播放记录</span>
-                <strong data-view="fullplayCount">0</strong>
-                <small data-view="latestFullplay">等待记录</small>
-              </article>
-            </section>
-            <section class="txzz-grid txzz-grid-secondary">
-              <article>
-                <span>下载任务</span>
-                <strong data-view="overviewDownloads">0</strong>
-                <small data-view="overviewDownloadMeta">等待下载任务</small>
-              </article>
-            </section>
-            <div class="txzz-quick-actions">
-              <button data-action="refresh">刷新状态</button>
-              <button data-action="sync-remote">同步云端</button>
-              <button data-action="refresh-downloads">刷新下载</button>
-              <button data-action="check-update">检查更新</button>
-            </div>
-          </section>
-
-          <section class="txzz-view" data-view-panel="fullplay">
-            <div class="txzz-page-card" data-page="fullplay">
-              <div>
-                <span>播放</span>
-                <strong>播放状态与下载入口</strong>
-                <small>展示最近视频、播放状态和下载入口。</small>
-              </div>
-              <span class="txzz-page-art" data-art="fullplay" aria-hidden="true"></span>
-              <button class="txzz-primary" data-action="download-full-video">下载当前视频</button>
-            </div>
-            <div class="txzz-content-card">
-              <div class="txzz-fullplay-card" data-view="fullplaySummary"></div>
-              <div class="txzz-section-head">
-                <strong>播放记录</strong>
-                <small>按获取时间倒序显示</small>
-              </div>
-              <div class="txzz-list" data-view="fullplayList"></div>
-            </div>
-          </section>
-
-          <section class="txzz-view" data-view-panel="downloads">
-            <div class="txzz-page-card" data-page="downloads">
-              <div>
-                <span>下载</span>
-                <strong>下载任务管理</strong>
-                <small data-view="downloadMeta">等待下载任务</small>
-              </div>
-              <span class="txzz-page-art" data-art="downloads" aria-hidden="true"></span>
-              <button class="txzz-primary" data-action="refresh-downloads">刷新下载</button>
-            </div>
-            <div class="txzz-download-stats" data-view="downloadSummary"></div>
-            <div class="txzz-download-actions">
-              <button data-action="open-download-folder">打开下载目录</button>
-              <button class="txzz-danger-action" data-action="clear-downloads">清空任务</button>
-            </div>
-            <div class="txzz-content-card">
-              <div class="txzz-section-head">
-                <strong>当前任务</strong>
-                <small>下载、合并、保存状态</small>
-              </div>
-              <div class="txzz-download-list" data-view="downloadList"></div>
-            </div>
-          </section>
-
-          <section class="txzz-view" data-view-panel="accounts">
-            <div class="txzz-account-console">
-              <div class="txzz-page-card" data-page="accounts">
-                <div>
-                  <span>账号池</span>
-                  <strong>账号池控制台</strong>
-                  <small data-view="accountPoolMeta">云端账号默认只显示可用账号</small>
-                </div>
-                <span class="txzz-page-art" data-art="accounts" aria-hidden="true"></span>
-                <div class="txzz-account-top-actions">
-                  <button type="button" class="txzz-primary" data-action="open-account-form">添加账号</button>
-                  <button type="button" data-action="sync-remote">同步云端</button>
-                  <button type="button" data-action="verify-account">检查本地</button>
-                </div>
-              </div>
-
-            <div class="txzz-account-summary" data-view="accountPoolSummary"></div>
-
-            <details class="txzz-remote-box" open>
-              <summary>
-                <span>远程配置</span>
-                <small data-view="remoteMeta">远程未配置</small>
-              </summary>
-              <div class="txzz-remote-grid">
-                <label>
-                  Worker URL
-                  <input data-field="remoteBaseUrl" placeholder="https://txzzsecure.lsy20.top">
-                </label>
-                <label>
-                  账号来源
-                  <select data-field="accountSourceMode">
-                    <option value="cloud">云端自动轮换</option>
-                    <option value="local">本地选中账号</option>
-                    <option value="cloud-first">云端优先，本地兜底</option>
-                  </select>
-                </label>
-              </div>
-              <div class="txzz-form-actions">
-                <button type="button" data-action="save-remote">保存配置</button>
-                <button type="button" data-action="sync-remote">同步云端</button>
-              </div>
-            </details>
-
-            <div class="txzz-account-filter">
-              <div>
-                <strong>账号列表</strong>
-                <small data-view="accountFilterMeta">默认隐藏失效云端账号</small>
-              </div>
-              <label class="txzz-switch">
-                <input data-field="showInvalidCloudAccounts" type="checkbox">
-                <span>查看已失效云端账号</span>
-              </label>
-            </div>
-
-            <div class="txzz-account-pool" data-view="accountPool"></div>
-
-            <div class="txzz-account-modal" data-view="accountModal" hidden>
-              <button type="button" class="txzz-account-modal-mask" data-action="close-account-form" aria-label="关闭添加账号弹窗"></button>
-              <div class="txzz-account-dialog" role="dialog" aria-label="添加账号">
-                <div class="txzz-form-title">
-                  <div>
-                    <strong data-view="accountFormTitle">添加本地账号</strong>
-                    <small data-view="accountFormHint">先选择保存方式，再填写对应内容</small>
-                  </div>
-                  <button type="button" data-action="close-account-form">关闭</button>
-                </div>
-
-                <div class="txzz-account-type-picker" data-view="accountTypePicker">
-                  <button type="button" data-action="choose-account-type" data-credential-mode="password">
-                    <b>账号密码</b>
-                    <span>填写用户名和密码，适合长期自动维护。</span>
-                  </button>
-                  <button type="button" data-action="choose-account-type" data-credential-mode="qrcode">
-                    <b>账号凭证</b>
-                    <span>粘贴账号凭证内容，本地保存后可上传云端加密。</span>
-                  </button>
-                  <button type="button" data-action="choose-account-type" data-credential-mode="token">
-                    <b>token/deviceId</b>
-                    <span>导入已有会话的 deviceId 和 userToken。</span>
-                  </button>
-                </div>
-
-                <form class="txzz-account-form" data-view="accountForm" autocomplete="off">
-                  <input data-field="accountCredentialMode" type="hidden" value="password">
-                  <div class="txzz-selected-type">
-                    <span data-view="accountCredentialLabel">账号密码</span>
-                    <button type="button" data-action="back-account-type">更换类型</button>
-                  </div>
-                  <label>
-                    账号 ID
-                    <input data-field="accountId" placeholder="留空自动生成">
-                  </label>
-                  <label>
-                    账号昵称
-                    <input data-field="accountLabel" placeholder="例如：账号池账号 01">
-                  </label>
-                  <label data-credential="password">
-                    用户名
-                    <input data-field="accountUsername" placeholder="账号用户名">
-                  </label>
-                  <label data-credential="password">
-                    密码
-                    <input data-field="accountPassword" type="password" placeholder="保存后可用于服务端登录">
-                  </label>
-                  <label data-credential="token">
-                    deviceId
-                    <input data-field="accountDeviceId" placeholder="导入 token 时必填">
-                  </label>
-                  <label data-credential="token">
-                    userToken
-                    <input data-field="accountToken" placeholder="xxxxxxxx_userid">
-                  </label>
-                  <label class="txzz-wide" data-credential="qrcode">
-                    账号凭证内容
-                    <textarea data-field="accountQrcode" spellcheck="false" placeholder="粘贴从账号凭证二维码解析出的明文"></textarea>
-                  </label>
-                  <label class="txzz-wide">
-                    备注
-                    <input data-field="accountNotes" placeholder="用途、状态范围或维护说明">
-                  </label>
-                  <div class="txzz-form-actions">
-                    <button type="button" data-action="save-account">保存本地</button>
-                    <button type="button" data-action="upload-account-remote">保存并上传云端</button>
-                    <button type="button" data-action="import-current-session">导入当前会话</button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section class="txzz-view" data-view-panel="tools">
-          <div class="txzz-page-card" data-page="tools">
-            <div>
-              <span>设置</span>
-              <strong>设置与更新</strong>
-              <small>管理版本更新、缓存清理和项目主页。</small>
-            </div>
-            <span class="txzz-page-art" data-art="tools" aria-hidden="true"></span>
-            <button data-action="check-update">检查更新</button>
-          </div>
-          <div class="txzz-content-card">
-            <div class="txzz-tools">
-              <button data-action="refresh">刷新状态</button>
-              <button data-action="about">关于项目</button>
-              <button data-action="check-update">检查更新</button>
-              <button data-action="download-latest">下载最新版</button>
-              <button class="txzz-danger-action" data-action="clear-cache">清除数据缓存</button>
-            </div>
-          </div>
-        </section>
-        </main>
-      </section>
-    </div>
-  `;
-  document.documentElement.appendChild(panel);
-
-  const flowBadge = document.createElement("div");
-  flowBadge.id = "txzz-flow-badge";
-  flowBadge.className = "txzz-flow-badge";
-  flowBadge.setAttribute("aria-live", "polite");
-  flowBadge.hidden = true;
-  applyAssetVars(flowBadge);
-  applyFlowBadgeVisual(flowBadge);
-  document.documentElement.appendChild(flowBadge);
-
-  const updateDialog = document.createElement("div");
-  updateDialog.id = "txzz-update-dialog";
-  updateDialog.className = "txzz-update-dialog";
-  updateDialog.hidden = true;
-  applyAssetVars(updateDialog);
-  updateDialog.innerHTML = `
-    <div class="txzz-update-mask" data-update-action="dismiss"></div>
-    <section class="txzz-update-card" role="dialog" aria-label="糖心志者更新提醒">
-      <div class="txzz-update-icon">志</div>
-      <div class="txzz-update-body">
-        <span>糖心志者发现新版本</span>
-        <strong data-update-view="title">远程仓库有新的版本清单</strong>
-        <p data-update-view="detail">点击查看项目仓库，获取最新版本和说明。</p>
-        <code data-update-view="line"></code>
-        <div class="txzz-update-actions">
-          <button type="button" data-update-action="download">下载最新版</button>
-          <button type="button" data-update-action="open">查看更新</button>
-          <button type="button" data-update-action="dismiss">稍后提醒</button>
-        </div>
-      </div>
-    </section>
-  `;
-  document.documentElement.appendChild(updateDialog);
-
-  const views = Object.fromEntries(Array.from(panel.querySelectorAll("[data-view]")).map((el) => [el.dataset.view, el]));
-  views.flowBadge = flowBadge;
-  views.updateDialog = updateDialog;
-  views.updateTitle = updateDialog.querySelector('[data-update-view="title"]');
-  views.updateDetail = updateDialog.querySelector('[data-update-view="detail"]');
-  views.updateLine = updateDialog.querySelector('[data-update-view="line"]');
-  const fields = Object.fromEntries(Array.from(panel.querySelectorAll("[data-field]")).map((el) => [el.dataset.field, el]));
-  const shell = panel.querySelector(".txzz-shell");
-  const ball = panel.querySelector(".txzz-ball");
+  const panel = createVirtualNode();
+  const views = createVirtualMap();
+  const fields = createVirtualMap();
+  const shell = createVirtualNode();
+  const ball = createVirtualNode();
 
   const state = {
     expanded: false,
@@ -465,16 +133,14 @@
     accountTypePicking: true,
     showInvalidCloudAccounts: false,
     editingAccountId: "",
+    lastActionPayload: {},
     repositoryUpdate: null
   };
 
   let drag = null;
   let ignoreNextToggle = false;
   let toastTimer = 0;
-  let flowBadgeTimer = 0;
-  let flowBadgeActive = false;
   let repositoryUpdateCheckTask = null;
-  const flowBadgeQueue = [];
   const downloadLocks = new Set();
   const announcedDownloadStages = new Set();
   const FLOW_BADGE_TITLES = [
@@ -1197,7 +863,7 @@
 
   function publishState() {
     try {
-      panel.dataset.txzzState = JSON.stringify({
+      const snapshot = {
         expanded: state.expanded,
         role: state.role,
         displayPatchApplied: isDisplayPatchActive(),
@@ -1213,8 +879,11 @@
         fullDetails: state.fullDetails.slice(-40),
         downloadTasks: state.downloadTasks || {},
         downloadSnapshots: state.downloadSnapshots || [],
+        repositoryUpdate: uiState.repositoryUpdate,
         publishedAt: new Date().toISOString()
-      });
+      };
+      window.__txzzBridgeState = snapshot;
+      window.dispatchEvent(new CustomEvent("txzz:state", { detail: snapshot }));
     } catch (_) {}
   }
 
@@ -1239,57 +908,12 @@
     state.flow.push(item);
     state.flow = state.flow.slice(-80);
     renderFlow();
-    updateFlowBadge(item);
     publishState();
   }
 
   function isKeyFlowTitle(title = "") {
     const value = String(title || "");
     return FLOW_BADGE_TITLES.some((item) => value === item || value.startsWith(item));
-  }
-
-  function updateFlowBadge(item = {}) {
-    const badge = views.flowBadge;
-    if (!badge || !isKeyFlowTitle(item.title)) return;
-    if (state.expanded) {
-      flowBadgeQueue.length = 0;
-      flowBadgeActive = false;
-      window.clearTimeout(flowBadgeTimer);
-      badge.className = "txzz-flow-badge";
-      badge.hidden = true;
-      return;
-    }
-    flowBadgeQueue.push(item);
-    if (flowBadgeQueue.length > 8) flowBadgeQueue.splice(0, flowBadgeQueue.length - 8);
-    showNextFlowBadge();
-  }
-
-  function flowBadgeDuration(item = {}) {
-    if (item.level === "error") return 10000;
-    return 2000;
-  }
-
-  function showNextFlowBadge() {
-    const badge = views.flowBadge;
-    if (!badge || flowBadgeActive || state.expanded) return;
-    const item = flowBadgeQueue.shift();
-    if (!item) return;
-    flowBadgeActive = true;
-    window.clearTimeout(flowBadgeTimer);
-    const level = item.level === "error" ? "is-error" : item.level === "ok" ? "is-ok" : "is-running";
-    badge.hidden = false;
-    badge.className = `txzz-flow-badge is-show ${level}`;
-    badge.innerHTML = `
-      <span>${escapeHtml(item.level === "error" ? "异常" : item.level === "ok" ? "完成" : "进行中")}</span>
-      <strong>${escapeHtml(item.title || "糖心志者")}</strong>
-      <small>${escapeHtml(clipText(item.detail || "", 42))}</small>
-    `;
-    flowBadgeTimer = window.setTimeout(() => {
-      badge.className = "txzz-flow-badge";
-      badge.hidden = true;
-      flowBadgeActive = false;
-      window.setTimeout(showNextFlowBadge, 220);
-    }, flowBadgeDuration(item));
   }
 
   function emitCloudAccountFlow(summary = {}, fallbackMovieId = "") {
@@ -1320,110 +944,12 @@
     }, 3600);
   }
 
-  function emptyState(title, detail = "等待新的运行数据") {
-    return `
-      <div class="txzz-empty">
-        <img src="${escapeHtml(EMPTY_STATE_IMAGE)}" alt="">
-        <b>${escapeHtml(title)}</b>
-        <span>${escapeHtml(detail)}</span>
-      </div>
-    `;
-  }
-
   function renderFlow() {
-    views.flow.innerHTML = state.flow.slice(-8).map((item, index) => `
-      <div class="txzz-step ${item.level === "ok" ? "is-ok" : item.level === "error" ? "is-error" : ""}">
-        <i>${index + 1}</i>
-        <div>
-          <b>${escapeHtml(item.title)}</b>
-          <span>${escapeHtml(item.detail)}</span>
-        </div>
-      </div>
-    `).join("") || emptyState("等待流程记录", "页面操作、账号池轮换和下载进度会显示在这里");
-  }
-
-  function renderStats() {
-    const selected = selectedAccount();
-    const latestCloud = latestUsedAccount();
-    views.poolCount.textContent = String(state.accountPool.length);
-    views.poolMeta.textContent = latestCloud
-      ? `最近使用 ${accountTitle(latestCloud)}`
-      : selected ? `${accountTitle(selected)} / ${selected.status || "idle"}` : "未选择账号";
-    views.fullplayCount.textContent = String(state.fullDetails.length);
-    const latest = state.fullDetails[state.fullDetails.length - 1];
-    views.latestFullplay.textContent = latest ? `${latest.movieId} / ${latest.action || "full_detail"}` : "等待记录";
-    const downloadStats = downloadTaskStats();
-    if (views.overviewDownloads) views.overviewDownloads.textContent = String(downloadStats.total);
-    if (views.overviewDownloadMeta) {
-      views.overviewDownloadMeta.textContent = downloadStats.total
-        ? `进行中 ${downloadStats.running} / 完成 ${downloadStats.completed} / 失败 ${downloadStats.failed}`
-        : "等待下载任务";
-    }
     publishState();
   }
 
-  function downloadStageLabel(stage) {
-    if (stage === "queued") return "已排队";
-    if (stage === "playlist") return "读取播放列表";
-    if (stage === "segments") return "准备分片";
-    if (stage === "segment") return "下载分片";
-    if (stage === "ready") return "合并完成，待保存";
-    if (stage === "save-dialog") return "选择保存位置";
-    if (stage === "complete") return "已保存到设备";
-    if (stage === "error") return "下载失败";
-    return stage || "下载任务";
-  }
-
-  function downloadFormatLabel(task = {}) {
-    if (task.format === "mp4" || /\.mp4(?:[?#]|$)/i.test(task.filename || "")) return "MP4";
-    if (task.format === "ts" || /\.ts(?:[?#]|$)/i.test(task.filename || "")) return "TS 兜底";
-    return task.mode === "direct" ? "原始格式" : "转封装中";
-  }
-
-  function downloadStageTone(stage) {
-    if (stage === "ready" || stage === "complete") return "is-ok";
-    if (stage === "error") return "is-error";
-    if (["queued", "playlist", "segments", "segment", "save-dialog"].includes(String(stage || ""))) return "is-running";
-    return "";
-  }
-
-  function downloadProgress(task = {}) {
-    const total = Number(task.total || 0);
-    const current = Number(task.current || 0);
-    if (task.stage === "complete") return 100;
-    if (task.stage === "ready") return 100;
-    if (!total) return task.stage === "queued" ? 2 : task.stage === "playlist" ? 6 : 0;
-    return Math.max(0, Math.min(99, Math.round((current / total) * 100)));
-  }
-
-  function downloadCardTitle(task = {}) {
-    const title = String(task.titleSnippet || task.movieTitle || "").trim();
-    if (title) return title.length > 14 ? `${title.slice(0, 14)}...` : title;
-    return task.movieId ? `视频 ${task.movieId}` : "视频任务";
-  }
-
-  function canSaveDownload(task = {}) {
-    return task.stage === "ready" || task.stage === "complete" || (task.mode === "direct" && Boolean(task.url));
-  }
-
-  function formatBytes(bytes) {
-    const value = Number(bytes || 0);
-    if (!value) return "未记录";
-    const units = ["B", "KB", "MB", "GB"];
-    let size = value;
-    let index = 0;
-    while (size >= 1024 && index < units.length - 1) {
-      size /= 1024;
-      index += 1;
-    }
-    return `${size.toFixed(index === 0 ? 0 : 1)} ${units[index]}`;
-  }
-
-  function formatTime(value) {
-    if (!value) return "未记录";
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return String(value);
-    return date.toLocaleString("zh-CN", { hour12: false });
+  function renderStats() {
+    publishState();
   }
 
   function downloadTasksArray() {
@@ -1432,96 +958,8 @@
       .sort((a, b) => String(b.updatedAt || "").localeCompare(String(a.updatedAt || "")));
   }
 
-  function downloadTaskStats(tasks = downloadTasksArray()) {
-    return {
-      total: tasks.length,
-      running: tasks.filter((task) => ["queued", "playlist", "segments", "segment", "save-dialog"].includes(String(task.stage || ""))).length,
-      completed: tasks.filter((task) => task.stage === "complete").length,
-      failed: tasks.filter((task) => task.stage === "error").length
-    };
-  }
-
   function renderDownloads() {
-    const tasks = downloadTasksArray();
-    const stats = downloadTaskStats(tasks);
-    if (views.overviewDownloads) views.overviewDownloads.textContent = String(stats.total);
-    if (views.overviewDownloadMeta) {
-      views.overviewDownloadMeta.textContent = stats.total
-        ? `进行中 ${stats.running} / 完成 ${stats.completed} / 失败 ${stats.failed}`
-        : "等待下载任务";
-    }
-    if (views.downloadSummary) {
-      views.downloadSummary.innerHTML = [
-        ["总任务", stats.total],
-        ["进行中", stats.running],
-        ["已完成", stats.completed],
-        ["失败", stats.failed]
-      ].map(([label, value]) => `
-        <article>
-          <span>${escapeHtml(label)}</span>
-          <strong>${escapeHtml(value)}</strong>
-        </article>
-      `).join("");
-    }
-    if (views.downloadMeta) {
-      const latest = tasks[0];
-      views.downloadMeta.textContent = latest
-        ? `最近更新：${downloadStageLabel(latest.stage)} / ${formatTime(latest.updatedAt)}`
-        : "等待下载任务";
-    }
-    if (views.downloadList) {
-      views.downloadList.innerHTML = tasks.map((task) => {
-        const percent = downloadProgress(task);
-        const count = task.total ? `${Number(task.current || 0)}/${Number(task.total || 0)} 片` : "等待分片统计";
-        const tone = downloadStageTone(task.stage);
-        const canSave = canSaveDownload(task);
-        const title = downloadCardTitle(task);
-        const fullTitle = task.movieTitle || task.filename || title;
-        return `
-          <article class="txzz-download-card ${tone}">
-            <div class="txzz-download-card-head">
-              <div>
-                <b title="${escapeHtml(fullTitle)}">${escapeHtml(title)}</b>
-                <span>${escapeHtml([task.movieId ? `视频 ${task.movieId}` : "", downloadFormatLabel(task), downloadStageLabel(task.stage)].filter(Boolean).join(" / "))}</span>
-              </div>
-              <i>${escapeHtml(`${percent}%`)}</i>
-            </div>
-            <div class="txzz-progress" aria-label="下载进度">
-              <span style="width:${percent}%"></span>
-            </div>
-            <div class="txzz-download-meta">
-              <span>${escapeHtml(count)}</span>
-              <span>${escapeHtml(formatBytes(task.bytes))}</span>
-              <span>${escapeHtml(formatTime(task.updatedAt))}</span>
-            </div>
-            ${task.error ? `<p class="txzz-download-error">${escapeHtml(task.error)}</p>` : ""}
-            ${task.transmuxError ? `<p class="txzz-download-warn">MP4 转封装失败，已保留 TS 兜底：${escapeHtml(task.transmuxError)}</p>` : ""}
-            <p class="txzz-download-file">${escapeHtml(task.filename || "等待生成文件名")}</p>
-            <code>${escapeHtml(task.url || "")}</code>
-            <div class="txzz-account-actions">
-              <button data-action="save-download-device" data-task-id="${escapeHtml(task.taskId || "")}" ${canSave ? "" : "disabled"}>${task.stage === "complete" ? "重新保存" : "保存到设备"}</button>
-              <button data-action="copy-download-url" data-task-id="${escapeHtml(task.taskId || "")}">复制链接</button>
-              <button data-action="remove-download-task" data-task-id="${escapeHtml(task.taskId || "")}" data-movie-id="${escapeHtml(task.movieId || "")}">删除</button>
-              <button data-action="open-download-folder">打开目录</button>
-            </div>
-          </article>
-        `;
-      }).join("") || emptyState("还没有下载任务", "进入视频详情页点击「下载」，或在「播放详情」页点击「下载视频」");
-    }
-    if (views.downloadSnapshots) {
-      const snapshots = Array.isArray(state.downloadSnapshots) ? state.downloadSnapshots.slice().reverse() : [];
-      views.downloadSnapshots.innerHTML = snapshots.map((snapshot) => `
-        <article>
-          <div>
-            <b>${escapeHtml(snapshot.label || snapshot.id || "下载记录")}</b>
-            <span>${escapeHtml(`保存时间：${formatTime(snapshot.savedAt)} / 总任务 ${snapshot.total || 0} / 完成 ${snapshot.completed || 0} / 失败 ${snapshot.failed || 0}`)}</span>
-          </div>
-          <div class="txzz-account-actions">
-            <button data-action="copy-download-snapshot" data-snapshot-id="${escapeHtml(snapshot.id || "")}">复制记录</button>
-          </div>
-        </article>
-      `).join("") || emptyState("暂无保存记录", "点击「保存当前记录」后会在这里留档");
-    }
+    publishState();
   }
 
   function announceDownloadTasks() {
@@ -1531,7 +969,7 @@
       announcedDownloadStages.add(key);
       const count = task.total ? ` ${task.current || 0}/${task.total}` : "";
       const detail = task.stage === "error"
-        ? `${task.movieId || ""} ${task.error || "未知错误"}`
+        ? `${task.movieId || ""} ${task.error || "????"}`
         : `${task.movieId || ""}${count} ${task.filename || ""}`.trim();
       emitFlow(downloadStageLabel(task.stage), detail, task.stage === "error" ? "error" : task.stage === "complete" ? "ok" : "info");
     }
@@ -1544,165 +982,26 @@
   }
 
   function renderSession() {
-    const session = state.session || {};
-    views.account.textContent = session.nickname || session.userId || "未读取";
-    views.accountMeta.textContent = session.token ? `${labelForRole(state.role)} / ${session.tokenMasked}` : `${labelForRole(state.role)} / 等待 token`;
-    if (views.sideAccount) views.sideAccount.textContent = views.account.textContent;
-    if (views.sideAccountMeta) views.sideAccountMeta.textContent = views.accountMeta.textContent;
-    views.rights.innerHTML = `
-      <span>永久会员</span>
-      <span>永久尤物圈</span>
-      <span>999 余额</span>
-    `;
-    views.rightsMeta.textContent = "客户端展示覆盖已启用";
     renderStats();
     publishState();
   }
 
   function renderPlayback() {
-    if (!views.playback) return;
-    views.playback.innerHTML = state.playback.slice(-28).reverse().map((item) => `
-      <article>
-        <b>${escapeHtml(categoryLabel(item.category))}</b>
-        <span>${escapeHtml([item.via, item.status ? `HTTP ${item.status}` : "", item.method || ""].filter(Boolean).join(" / "))}</span>
-        <code>${escapeHtml(item.url || "")}</code>
-      </article>
-    `).join("") || emptyState("等待播放资源", "打开视频详情或播放页后会显示 M3U8、MP4、播放接口与媒体源");
+    publishState();
   }
 
   function renderObservations() {
-    if (!views.observations) return;
-    views.observations.innerHTML = state.observations.slice(-32).reverse().map((item) => `
-      <article>
-        <b>${escapeHtml(categoryLabel(item.category))}</b>
-        <span>${escapeHtml([item.via, item.status ? `HTTP ${item.status}` : "", (item.flags || []).join(", ")].filter(Boolean).join(" / "))}</span>
-        <code>${escapeHtml(item.url || "")}</code>
-        ${item.bodyHead ? `<p>${escapeHtml(clipText(item.bodyHead, 260))}</p>` : ""}
-      </article>
-    `).join("") || emptyState("等待账号状态记录", "购买、金币、余额或账号状态接口会显示在这里");
+    publishState();
   }
 
   function renderAccounts() {
-    const remote = state.remote || {};
     renderStats();
-    if (fields.remoteBaseUrl) fields.remoteBaseUrl.value = remote.baseUrl || "";
-    if (fields.accountSourceMode) fields.accountSourceMode.value = remote.accountSourceMode || "cloud";
-    if (fields.showInvalidCloudAccounts) fields.showInvalidCloudAccounts.checked = uiState.showInvalidCloudAccounts;
-    if (views.remoteMeta) {
-      const sourceLabel = remoteSourceLabel(remote.accountSourceMode);
-      views.remoteMeta.textContent = remote.baseUrl
-        ? `已配置 / 来源=${sourceLabel} / ${remote.lastError ? `错误：${remote.lastError}` : remote.lastSyncAt ? `上次同步 ${remote.lastSyncAt}` : "等待同步"}`
-        : "远程未配置；本地账号可上传到 Worker/Supabase 后再同步。";
-    }
-    const stats = accountPoolStats();
-    if (views.accountPoolMeta) {
-      views.accountPoolMeta.textContent = `共 ${stats.total} 个账号 / 云端可用 ${stats.availableCloud} / 本地 ${stats.local}${stats.invalidCloud ? ` / 已隐藏失效 ${stats.invalidCloud}` : ""}`;
-    }
-    if (views.accountFilterMeta) {
-      views.accountFilterMeta.textContent = uiState.showInvalidCloudAccounts
-        ? `正在显示 ${stats.invalidCloud} 个已失效云端账号`
-        : stats.invalidCloud ? `已隐藏 ${stats.invalidCloud} 个失效云端账号` : "当前没有失效云端账号";
-    }
-    if (views.accountPoolSummary) {
-      views.accountPoolSummary.innerHTML = [
-        ["全部", stats.total],
-        ["云端可用", stats.availableCloud],
-        ["本地", stats.local],
-        ["失效", stats.invalidCloud]
-      ].map(([label, value]) => `
-        <article>
-          <span>${escapeHtml(label)}</span>
-          <strong>${escapeHtml(value)}</strong>
-        </article>
-      `).join("");
-    }
-    if (views.accountModal) views.accountModal.hidden = !uiState.accountFormOpen;
-    views.accountTypePicker?.classList.toggle("is-active", uiState.accountFormOpen && uiState.accountTypePicking);
-    views.accountForm?.classList.toggle("is-open", uiState.accountFormOpen && !uiState.accountTypePicking);
-    setAccountCredentialMode(fields.accountCredentialMode?.value || "password");
-
-    const visibleAccounts = visibleAccountPool();
-    const activeCloudAccountId = latestUsedAccountId();
-    views.accountPool.innerHTML = visibleAccounts.map((account) => {
-      const cloudReadonly = isCloudAccount(account);
-      const isSelected = !cloudReadonly && account.id === state.selectedFullAccountId;
-      const isActiveCloud = cloudReadonly && activeCloudAccountId && account.id === activeCloudAccountId;
-      const alreadyCloud = !cloudReadonly && cloudHasAccount(account.id);
-      const status = accountStatusInfo(account);
-      const rights = accountRightsInfo(account);
-      const title = accountNickname(account);
-      const meta = [
-        cloudReadonly ? "云端账号" : "本地账号",
-        credentialLabel(account),
-        account.username ? `用户名 ${account.username}` : "",
-        account.userInfo?.id ? `用户 ID ${account.userInfo.id}` : "",
-        account.id
-      ].filter(Boolean).join(" / ");
-      return `
-        <article class="${["txzz-account-card", isSelected ? "is-selected" : "", isActiveCloud ? "is-active-cloud" : "", cloudReadonly ? "is-cloud" : "is-local", status.ok ? "is-usable" : "is-invalid"].filter(Boolean).join(" ")}">
-          <div class="txzz-account-card-main">
-            <div class="txzz-account-card-title">
-              <b>${escapeHtml(title)}</b>
-              <div class="txzz-account-badges">
-                ${isActiveCloud ? `<em class="txzz-status-running">最近使用</em>` : ""}
-                ${cloudReadonly ? `<em class="txzz-status-cloud">自动轮换</em>` : ""}
-                <em class="txzz-status-${escapeHtml(status.tone)}">${escapeHtml(status.label)}</em>
-              </div>
-            </div>
-            <span>${escapeHtml(meta)}</span>
-            <div class="txzz-account-rights" aria-label="账号权益摘要">
-              <span class="txzz-right-${escapeHtml(rights.vip.tone)}"><i>普通 VIP</i><b>${escapeHtml(rights.vip.label)}</b></span>
-              <span class="txzz-right-${escapeHtml(rights.dark.tone)}"><i>尤物圈</i><b>${escapeHtml(rights.dark.label)}</b></span>
-              <span class="txzz-right-${escapeHtml(rights.coin.tone)}"><i>金币</i><b>${escapeHtml(rights.coin.label)}</b></span>
-            </div>
-            <p>${escapeHtml(status.ok ? status.reason : `不可用原因：${status.reason}`)}</p>
-            ${cloudReadonly ? `<code>云端摘要：${escapeHtml(account.tokenMasked || account.qrcodeMasked || account.passwordMasked || "凭据仅服务端可见")}</code>` : `<code>${escapeHtml(account.tokenMasked || (account.hasToken ? "token 已保存" : "本地凭据可编辑"))}</code>`}
-          </div>
-          <div class="txzz-account-actions">
-            ${cloudReadonly ? `<button data-action="noop" disabled>自动轮换</button>` : `<button data-action="select-account" data-account-id="${escapeHtml(account.id)}">${isSelected ? "已选择" : "选择"}</button>`}
-            ${cloudReadonly ? "" : `<button data-action="verify-account" data-account-id="${escapeHtml(account.id)}">检查</button>`}
-            ${cloudReadonly ? `<button data-action="show-account-summary" data-account-id="${escapeHtml(account.id)}">摘要</button>` : `<button data-action="edit-account" data-account-id="${escapeHtml(account.id)}">编辑</button>`}
-            ${cloudReadonly ? "" : `<button data-action="${alreadyCloud ? "noop" : "upload-local-account-remote"}" data-account-id="${escapeHtml(account.id)}" ${alreadyCloud ? "disabled" : ""}>${alreadyCloud ? "已在云端" : "上传云端"}</button>`}
-            ${cloudReadonly ? "" : `<button data-action="remove-account" data-account-id="${escapeHtml(account.id)}">移除</button>`}
-          </div>
-        </article>
-      `;
-    }).join("") || emptyState(
-      stats.invalidCloud && !uiState.showInvalidCloudAccounts ? "已隐藏失效云端账号" : "账号池为空",
-      stats.invalidCloud && !uiState.showInvalidCloudAccounts ? "打开「查看已失效云端账号」后可查看待检查或不可用账号" : "点击「添加账号」保存本地账号，或同步云端账号池"
-    );
+    publishState();
   }
 
   function renderFullDetails() {
-    const latest = state.fullDetails[state.fullDetails.length - 1];
-    if (views.fullplaySummary) {
-      views.fullplaySummary.innerHTML = latest ? `
-      <div>
-        <span>最近记录</span>
-        <strong>${escapeHtml(latest.movieId || "")}</strong>
-        <small>${escapeHtml([latest.accountLabel || latest.accountUser, latest.action, latest.hasBuy ? `has_buy=${latest.hasBuy}` : ""].filter(Boolean).join(" / "))}</small>
-      </div>
-      <div>
-        <span>完整 M3U8</span>
-        <strong>${escapeHtml(latest.fullStat?.segments ?? "?")} 片</strong>
-        <small>${escapeHtml(latest.fullStat?.duration ? `${latest.fullStat.duration}s` : latest.fullStat?.error || "等待统计")}</small>
-      </div>
-    ` : emptyState("等待播放详情", "打开视频详情页后会记录完整播放资源");
-    }
-    if (views.fullplayList) {
-      views.fullplayList.innerHTML = state.fullDetails.slice(-24).reverse().map((item) => `
-      <article>
-        <b>${escapeHtml(item.movieId)} 路 ${escapeHtml(item.action || "full_detail")}</b>
-        <span>${escapeHtml([item.accountLabel || item.accountUser, item.fullStat?.segments ? `${item.fullStat.segments} 片` : "", item.fullStat?.duration ? `${item.fullStat.duration}s` : ""].filter(Boolean).join(" / "))}</span>
-        <code>${escapeHtml(item.playLink || "")}</code>
-        ${item.backupLink ? `<code>${escapeHtml(item.backupLink)}</code>` : ""}
-        <div class="txzz-account-actions">
-          <button data-action="download-full-video" data-movie-id="${escapeHtml(item.movieId || "")}">下载视频</button>
-        </div>
-      </article>
-    `).join("") || emptyState("还没有播放详情记录", "获取完整播放资源后会在这里展示");
-    }
     renderStats();
+    publishState();
   }
 
   function requestPageProbe(timeoutMs = 1000) {
@@ -1946,18 +1245,16 @@
         remote.line && !remote.version ? remote.line : ""
       ].filter(Boolean).join(" / ");
     }
-    views.updateDialog.hidden = false;
-    views.updateDialog.classList.add("is-open");
+    publishState();
     emitFlow("更新提醒", "远程仓库发现新的版本清单", "ok");
   }
 
   async function closeRepositoryUpdateDialog(mode = "dismissed") {
     const updateId = uiState.repositoryUpdate?.remote?.id || "";
-    views.updateDialog.classList.remove("is-open");
-    views.updateDialog.hidden = true;
     if (updateId) {
       await sendRuntime("markRepositoryUpdateNotified", { updateId, mode }).catch(() => {});
     }
+    publishState();
   }
 
   async function checkRepositoryUpdate(force = false, options = {}) {
@@ -2078,29 +1375,40 @@
     emitFlow("清除缓存", "已清除插件旧数据缓存，建议刷新当前页面后继续使用", "ok");
   }
 
-  function accountFromForm() {
-    const label = fields.accountLabel.value.trim();
-    const username = fields.accountUsername.value.trim();
+  function payloadValue(key, fallback = "") {
+    const payload = uiState.lastActionPayload || {};
+    if (Object.prototype.hasOwnProperty.call(payload, key)) return payload[key];
+    return fallback;
+  }
+
+  function payloadText(key, fallback = "") {
+    return String(payloadValue(key, fallback) ?? "").trim();
+  }
+
+  function accountFromForm(payload = uiState.lastActionPayload || {}) {
+    uiState.lastActionPayload = payload || {};
+    const label = payloadText("accountLabel", payloadText("accountNickname"));
+    const username = payloadText("accountUsername");
     const slugSource = username || label;
     const slugValue = slugSource.toLowerCase().replace(/[^a-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 42);
-    const id = fields.accountId.value.trim() || (slugValue ? `full-${slugValue}` : `full-local-${Date.now()}`);
-    const mode = fields.accountCredentialMode?.value || "password";
+    const id = payloadText("accountId") || (slugValue ? `full-${slugValue}` : `full-local-${Date.now()}`);
+    const mode = payloadText("accountCredentialMode", "password") || "password";
     const account = {
       id,
       label: label || username || id,
       username: mode === "password" ? username : "",
-      password: mode === "password" ? fields.accountPassword.value : "",
-      deviceId: mode === "token" ? fields.accountDeviceId.value.trim() : "",
-      userToken: mode === "token" ? fields.accountToken.value.trim() : "",
-      qrcode: mode === "qrcode" ? fields.accountQrcode.value.trim() : "",
-      notes: fields.accountNotes.value.trim(),
+      password: mode === "password" ? String(payloadValue("accountPassword", "")) : "",
+      deviceId: mode === "token" ? payloadText("accountDeviceId") : "",
+      userToken: mode === "token" ? payloadText("accountToken") : "",
+      qrcode: mode === "qrcode" ? payloadText("accountQrcode") : "",
+      notes: payloadText("accountNotes"),
       source: id === "full-lsyhook" ? "seed" : "manual"
     };
     if (mode === "qrcode" && !account.label && !account.id) account.label = "账号凭证";
     return account;
   }
 
-  function validateAccountCredential(account = {}, mode = fields.accountCredentialMode?.value || "password") {
+  function validateAccountCredential(account = {}, mode = payloadText("accountCredentialMode", "password") || "password") {
     if (mode === "password" && (!account.username || !account.password)) {
       throw new Error("账号密码模式需要填写用户名和密码");
     }
@@ -2112,11 +1420,11 @@
     }
   }
 
-  async function saveAccount() {
+  async function saveAccount(payload = uiState.lastActionPayload || {}) {
     const selected = uiState.editingAccountId ? state.accountPool.find((item) => item.id === uiState.editingAccountId) : null;
     if (selected && isCloudAccount(selected)) throw new Error("云端账号只显示脱敏摘要，不能在插件前端修改；请先切换到本地账号或新建本地账号。");
-    const account = accountFromForm();
-    validateAccountCredential(account);
+    const account = accountFromForm(payload);
+    validateAccountCredential(account, payloadText("accountCredentialMode", "password") || "password");
     const existing = state.accountPool.find((item) => item.id === account.id);
     if (existing && isCloudAccount(existing) && existing.id !== uiState.editingAccountId) throw new Error("云端账号只显示摘要，不能用同 ID 覆盖；请换一个账号 ID");
     const response = await sendRuntime("upsertAccount", { account });
@@ -2125,14 +1433,15 @@
     emitFlow("账号池", `已保存 ${account.label || account.username}`, "ok");
   }
 
-  async function saveRemoteConfig() {
+  async function saveRemoteConfig(payload = uiState.lastActionPayload || {}) {
+    const accountSourceMode = String(payload.accountSourceMode || state.remote?.accountSourceMode || "cloud");
     const response = await sendRuntime("saveRemoteConfig", {
       remote: {
-        baseUrl: fields.remoteBaseUrl.value.trim(),
-        accountSourceMode: fields.accountSourceMode?.value || "cloud",
+        baseUrl: String(payload.remoteBaseUrl ?? state.remote?.baseUrl ?? "").trim(),
+        accountSourceMode,
         fixedAccountId: "",
         enabled: true,
-        fallbackLocal: fields.accountSourceMode?.value === "cloud-first"
+        fallbackLocal: accountSourceMode === "cloud-first"
       }
     });
     syncSavedState(response.state || {});
@@ -2153,11 +1462,11 @@
     }
   }
 
-  async function uploadAccountRemote() {
+  async function uploadAccountRemote(payload = uiState.lastActionPayload || {}) {
     const selected = uiState.editingAccountId ? state.accountPool.find((item) => item.id === uiState.editingAccountId) : null;
     if (selected && isCloudAccount(selected)) throw new Error("云端账号只显示脱敏摘要，不能直接重复上传；请先在表单中新建本地账号或导入当前会话。");
-    const account = accountFromForm();
-    validateAccountCredential(account);
+    const account = accountFromForm(payload);
+    validateAccountCredential(account, payloadText("accountCredentialMode", "password") || "password");
     const existing = state.accountPool.find((item) => item.id === account.id);
     if (existing && isCloudAccount(existing) && existing.id !== uiState.editingAccountId) throw new Error("云端已有同 ID 账号，不能重复覆盖；请换一个账号 ID");
     const response = await sendRuntime("uploadAccountToRemote", { account });
@@ -2326,20 +1635,8 @@
     }
     syncViewportVars();
     state.expanded = typeof force === "boolean" ? force : !state.expanded;
-    panel.classList.toggle("txzz-open", state.expanded);
-    panel.classList.toggle("txzz-closed", !state.expanded);
-    if (state.expanded && views.flowBadge) {
-      flowBadgeQueue.length = 0;
-      flowBadgeActive = false;
-      window.clearTimeout(flowBadgeTimer);
-      views.flowBadge.className = "txzz-flow-badge";
-      views.flowBadge.hidden = true;
-    }
     publishState();
     if (state.expanded) {
-      panel.classList.remove("txzz-dragged");
-      shell.style.removeProperty("--txzz-left");
-      shell.style.removeProperty("--txzz-top");
       collectSession().catch(() => {});
       loadSavedState(false).catch(() => {});
       remindRepositoryUpdateOnPanelOpen();
@@ -2348,25 +1645,49 @@
 
   function switchTab(tab) {
     const targetTab = PAGE_TITLES[tab] ? tab : "overview";
-    panel.querySelectorAll("[data-tab]").forEach((button) => button.classList.toggle("is-active", button.dataset.tab === targetTab));
-    panel.querySelectorAll("[data-view-panel]").forEach((view) => view.classList.toggle("is-active", view.dataset.viewPanel === targetTab));
     if (views.pageTitle) views.pageTitle.textContent = PAGE_TITLES[targetTab] || "功能面板";
   }
 
-  panel.addEventListener("click", async (event) => {
-    const actionEl = event.target.closest("[data-action]");
-    const tabEl = event.target.closest("[data-tab]");
-    if (tabEl) {
-      switchTab(tabEl.dataset.tab);
-      event.preventDefault();
-      return;
+  function syncActionPayloadToFields(payload = {}) {
+    uiState.lastActionPayload = payload || {};
+    const mapping = {
+      remoteBaseUrl: "remoteBaseUrl",
+      accountSourceMode: "accountSourceMode",
+      showInvalidCloudAccounts: "showInvalidCloudAccounts",
+      accountCredentialMode: "accountCredentialMode",
+      accountLabel: "accountLabel",
+      accountNickname: "accountNickname",
+      accountUsername: "accountUsername",
+      accountPassword: "accountPassword",
+      accountDeviceId: "accountDeviceId",
+      accountToken: "accountToken",
+      accountQrcode: "accountQrcode",
+      accountNotes: "accountNotes"
+    };
+    Object.entries(mapping).forEach(([key, fieldName]) => {
+      if (!(key in payload) || !fields[fieldName]) return;
+      const field = fields[fieldName];
+      if (field.type === "checkbox") {
+        field.checked = Boolean(payload[key]);
+      } else {
+        field.value = String(payload[key] ?? "");
+      }
+    });
+    if (payload.accountNickname && fields.accountLabel) fields.accountLabel.value = String(payload.accountNickname || "");
+    if (payload.accountCredentialMode) setAccountCredentialMode(String(payload.accountCredentialMode));
+    if (Object.prototype.hasOwnProperty.call(payload, "showInvalidCloudAccounts")) {
+      uiState.showInvalidCloudAccounts = Boolean(payload.showInvalidCloudAccounts);
+      renderAccounts();
     }
-    if (!actionEl) return;
-    const action = actionEl.dataset.action;
-    const accountId = actionEl.dataset.accountId || state.selectedFullAccountId;
+  }
+
+  async function handleTxzzAction(action, payload = {}) {
+    if (!action) return;
+    syncActionPayloadToFields(payload);
+    const accountId = payload.accountId || state.selectedFullAccountId;
     try {
       if (action === "noop") return;
-      if (action === "toggle") togglePanel();
+      if (action === "toggle") togglePanel(typeof payload.force === "boolean" ? payload.force : undefined);
       if (action === "close") togglePanel(false);
       if (action === "about") {
         openRepositoryHome();
@@ -2409,7 +1730,7 @@
       }
       if (action === "open-account-form") openAccountForm();
       if (action === "close-account-form") closeAccountForm();
-      if (action === "choose-account-type") openAccountForm(null, actionEl.dataset.credentialMode || "password");
+      if (action === "choose-account-type") openAccountForm(null, payload.credentialMode || payload.accountCredentialMode || "password");
       if (action === "back-account-type") backAccountTypePicker();
       if (action === "edit-account") {
         const account = state.accountPool.find((item) => item.id === accountId);
@@ -2417,22 +1738,22 @@
         openAccountForm(account);
       }
       if (action === "remove-account") await removeAccount(accountId);
-      if (action === "save-account") await saveAccount();
-      if (action === "save-remote") await saveRemoteConfig();
+      if (action === "save-account") await saveAccount(payload);
+      if (action === "save-remote") await saveRemoteConfig(payload);
       if (action === "sync-remote") await syncRemoteAccounts();
-      if (action === "upload-account-remote") await uploadAccountRemote();
+      if (action === "upload-account-remote") await uploadAccountRemote(payload);
       if (action === "upload-local-account-remote") await uploadLocalAccountRemote(accountId);
-      if (action === "download-full-video") await downloadFullVideo(actionEl.dataset.movieId || currentMovieId());
+      if (action === "download-full-video") await downloadFullVideo(payload.movieId || currentMovieId());
       if (action === "refresh-downloads") {
         await refreshLocalDownloadState();
         emitFlow("下载管理", "已刷新下载任务状态", "ok");
       }
       if (action === "save-downloads") await saveDownloadRecords();
       if (action === "copy-downloads") await copyDownloadRecords();
-      if (action === "copy-download-url") await copyDownloadUrl(actionEl.dataset.taskId || "");
-      if (action === "copy-download-snapshot") await copyDownloadSnapshot(actionEl.dataset.snapshotId || "");
-      if (action === "save-download-device") await saveDownloadDevice(actionEl.dataset.taskId || "");
-      if (action === "remove-download-task") await removeDownloadTask(actionEl.dataset.taskId || "", actionEl.dataset.movieId || "");
+      if (action === "copy-download-url") await copyDownloadUrl(payload.taskId || "");
+      if (action === "copy-download-snapshot") await copyDownloadSnapshot(payload.snapshotId || "");
+      if (action === "save-download-device") await saveDownloadDevice(payload.taskId || "");
+      if (action === "remove-download-task") await removeDownloadTask(payload.taskId || "", payload.movieId || "");
       if (action === "clear-downloads") await clearDownloadTasks();
       if (action === "clear-download-snapshots") await clearDownloadSnapshots();
       if (action === "open-download-folder") await openDownloadFolder();
@@ -2478,54 +1799,17 @@
     } catch (err) {
       emitFlow("操作失败", err?.message || String(err), "error");
     }
-    event.preventDefault();
+  }
+
+  window.addEventListener("txzz:ui-action", (event) => {
+    const detail = event.detail || {};
+    handleTxzzAction(detail.action, detail.payload || {}).catch((err) => {
+      emitFlow("操作失败", err?.message || String(err), "error");
+    });
   });
 
-  updateDialog.addEventListener("click", async (event) => {
-    const actionEl = event.target.closest("[data-update-action]");
-    if (!actionEl) return;
-    const action = actionEl.dataset.updateAction;
-    try {
-      if (action === "open") {
-        openRepositoryHome();
-        await closeRepositoryUpdateDialog("notified");
-        emitFlow("更新提醒", "已打开糖心志者项目仓库", "ok");
-      }
-      if (action === "download") {
-        const response = await sendRuntime("downloadRepositoryArchive", {
-          version: uiState.repositoryUpdate?.remote?.version || "",
-          build: uiState.repositoryUpdate?.remote?.build || ""
-        });
-        await closeRepositoryUpdateDialog("notified");
-        emitFlow("更新提醒", response.downloadId ? `已开始下载最新版压缩包：${response.filename}` : "已提交最新版下载任务", "ok");
-      }
-      if (action === "dismiss") {
-        await closeRepositoryUpdateDialog("dismissed");
-        emitFlow("更新提醒", "已关闭本次更新提醒", "ok");
-      }
-    } catch (err) {
-      emitFlow("更新提醒", err?.message || String(err), "error");
-    }
-    event.preventDefault();
-  });
-
-  panel.addEventListener("submit", (event) => {
-    if (event.target.closest(".txzz-account-form")) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-  });
-
-  panel.addEventListener("change", (event) => {
-    const field = event.target.closest("[data-field]");
-    if (!field) return;
-    if (field.dataset.field === "showInvalidCloudAccounts") {
-      uiState.showInvalidCloudAccounts = Boolean(field.checked);
-      renderAccounts();
-    }
-    if (field.dataset.field === "accountCredentialMode") {
-      setAccountCredentialMode(field.value || "password");
-    }
+  window.addEventListener("txzz:ui-ready", () => {
+    publishState();
   });
 
   function startDrag(event) {
@@ -2707,17 +1991,6 @@
     }
   }
 
-  ball.addEventListener("mousedown", startDrag);
-  ball.addEventListener("pointerup", pointerOpenFallback);
-  ball.addEventListener("touchstart", startDrag, { passive: false });
-  ball.addEventListener("touchend", pointerOpenFallback, { passive: false });
-  const dragHandle = panel.querySelector("[data-drag-handle]");
-  dragHandle.addEventListener("mousedown", startDrag);
-  dragHandle.addEventListener("touchstart", startDrag, { passive: false });
-  window.addEventListener("mousemove", moveDrag);
-  window.addEventListener("mouseup", endDrag);
-  window.addEventListener("touchmove", moveDrag, { passive: false });
-  window.addEventListener("touchend", endDrag);
   window.addEventListener("resize", syncViewportVars);
   window.addEventListener("orientationchange", () => window.setTimeout(syncViewportVars, 80));
   window.visualViewport?.addEventListener("resize", syncViewportVars);
