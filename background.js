@@ -34,9 +34,9 @@ const REPOSITORY_CONFIG = {
   timeoutMs: 9000
 };
 
-const LOCAL_UPDATE_BUILD = "2026-06-14-0106";
+const LOCAL_UPDATE_BUILD = "2026-06-14-1003";
 
-const FALLBACK_LOCAL_CHANGELOG_HEAD = "2026-06-14 01:06 【修复】修复云端账号因视频资源异常被误判为失效的问题，同步优化账号池旧数据清理说明。";
+const FALLBACK_LOCAL_CHANGELOG_HEAD = "2026-06-14 10:03 【修复】修复糖果风界面关闭状态遮挡网站内容、按钮圆角丢失和播放页内部英文标签显示问题。";
 
 const DEFAULT_ACCOUNTS = [
   {

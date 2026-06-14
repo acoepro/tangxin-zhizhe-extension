@@ -36,7 +36,7 @@ export function OverviewPage({ state, onAction, onPage }: Props) {
         <div className="absolute bottom-2 right-16 select-none text-4xl opacity-15">🍬</div>
         <p className="mb-1 text-xs font-medium opacity-80">糖心志者控制台</p>
         <h2 className="mb-1 text-xl font-bold">你好，欢迎回来 👋</h2>
-        <p className="text-xs opacity-75">{state.session?.nickname || state.session?.userId || "等待读取当前页面会话"} · 当前版本 v2.1.1</p>
+        <p className="text-xs opacity-75">{state.session?.nickname || state.session?.userId || "等待读取当前页面会话"} · 当前版本 v2.1.2</p>
         <div className="mt-3 flex gap-3 text-xs">
           <span className="rounded-full bg-white/20 px-3 py-1 backdrop-blur">账号 {state.accountPool?.length || 0} 个</span>
           <span className="rounded-full bg-white/20 px-3 py-1 backdrop-blur">下载 {stats.total} 个</span>

@@ -354,7 +354,7 @@ node -e "JSON.parse(require('fs').readFileSync('.\\tangxin-zhizhe-extension\\man
 
 | 组件 | 版本 |
 | --- | --- |
-| 糖心志者 | `2.1.1` |
+| 糖心志者 | `2.1.2` |
 | Manifest | `3` |
 | mux.js | `7.0.0` |
 | Worker 推荐版本 | `1.0.2` |
@@ -413,3 +413,4 @@ node -e "JSON.parse(require('fs').readFileSync('.\\tangxin-zhizhe-extension\\man
 2026-06-14 03:55 【优化】直接接入 Figma Make「生成糖果风页面」React 源码，新增 ui-src 源码目录、Vite 固定版本构建链路和 dist-ui 扩展加载产物；content.js 新增状态与动作事件桥，保留原账号池、播放、下载和更新业务逻辑；manifest.json 加载新糖果风 UI，同步更新 README 构建与目录说明。
 2026-06-14 04:03 【修复】修复糖果风 React 内容脚本因构建产物残留运行环境判断导致浏览器报错、页面继续显示旧界面的问题；旧 DOM 面板改为隐藏业务承载层，新界面提升到最高层级并增强状态桥重试，同步更新 README 排查说明。
 2026-06-14 09:59 【修复】修复糖果风 React 界面关闭状态仍显示整屏背景导致网站内容被遮挡的问题，关闭时只保留流程标签和悬浮球，打开面板时保留模糊蒙版；补充 Shadow DOM 圆角变量与圆角类兜底，修复按钮和背景色块变直角的问题；播放页动作标签改为中文显示，同步更新 README 说明。
+2026-06-14 10:03 【新增】版本号升级到 `2.1.2`，同步更新 manifest、package、update.json、后台本地构建号、前端版本展示和 README 版本说明。
