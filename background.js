@@ -34,7 +34,7 @@ const REPOSITORY_CONFIG = {
   timeoutMs: 9000
 };
 
-const LOCAL_UPDATE_BUILD = "2026-06-14-1003";
+const LOCAL_UPDATE_BUILD = "2026-06-14-1458";
 
 const FALLBACK_LOCAL_CHANGELOG_HEAD = "2026-06-14 10:03 【修复】修复糖果风界面关闭状态遮挡网站内容、按钮圆角丢失和播放页内部英文标签显示问题。";
 
