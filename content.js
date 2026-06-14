@@ -486,7 +486,7 @@
   function isCloudAccount(account = {}) {
     const source = String(account.source || "");
     return Boolean(account.cloudReadonly || account.isCloud || account.remoteId || account.cloudId)
-      || ["remote", "qrcode", "remote-seed", "seed"].includes(source);
+      || ["remote", "qrcode"].includes(source);
   }
 
   function cloudHasAccount(accountId = "") {
@@ -1402,7 +1402,7 @@
       userToken: mode === "token" ? payloadText("accountToken") : "",
       qrcode: mode === "qrcode" ? payloadText("accountQrcode") : "",
       notes: payloadText("accountNotes"),
-      source: id === "full-lsyhook" ? "seed" : "manual"
+      source: "manual"
     };
     if (mode === "qrcode" && !account.label && !account.id) account.label = "账号凭证";
     return account;

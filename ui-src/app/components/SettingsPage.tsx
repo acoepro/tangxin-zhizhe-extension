@@ -43,7 +43,7 @@ export function SettingsPage({ state, onAction }: Props) {
         </div>
         <div className="grid grid-cols-2 gap-2 text-xs">
           {[
-            { label: "版本", value: "v2.1.3" },
+            { label: "版本", value: "v2.1.4" },
             { label: "Manifest", value: "V3" },
             { label: "mux.js", value: "7.0.0" },
             { label: "界面", value: "Figma Make" }
@@ -122,7 +122,7 @@ export function SettingsPage({ state, onAction }: Props) {
               </div>
               <button onClick={() => setShowUpdateModal(false)}><X size={18} className="text-purple-400" /></button>
             </div>
-            <p className="mb-4 text-xs text-purple-400">{updateAvailable ? "可以点击下载最新版获取远程更新包。" : "当前版本 v2.1.3 已是最新，无需更新。"}</p>
+            <p className="mb-4 text-xs text-purple-400">{updateAvailable ? "可以点击下载最新版获取远程更新包。" : "当前版本 v2.1.4 已是最新，无需更新。"}</p>
             <button onClick={() => setShowUpdateModal(false)} className="w-full rounded-xl bg-gradient-to-r from-pink-400 to-purple-500 py-2 text-sm font-medium text-white shadow-md">
               好的
             </button>

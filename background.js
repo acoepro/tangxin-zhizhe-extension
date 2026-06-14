@@ -7,7 +7,7 @@ const API_CONFIG = {
   aesKey: "fd14f9f8e38808fa"
 };
 
-const STORAGE_SCHEMA_VERSION = "2026-06-13-cloud-readonly-v1";
+const STORAGE_SCHEMA_VERSION = "2026-06-14-clean-runtime-v1";
 const LEGACY_REMOTE_BASE_URLS = [
   "https://txzz.lsy20.top",
   "https://txzz-secure-pool.3199912548.workers.dev"
@@ -34,33 +34,17 @@ const REPOSITORY_CONFIG = {
   timeoutMs: 9000
 };
 
-const LOCAL_UPDATE_BUILD = "2026-06-14-1458";
+const LOCAL_UPDATE_BUILD = "2026-06-14-1515";
 
-const FALLBACK_LOCAL_CHANGELOG_HEAD = "2026-06-14 10:03 【修复】修复糖果风界面关闭状态遮挡网站内容、按钮圆角丢失和播放页内部英文标签显示问题。";
-
-const DEFAULT_ACCOUNTS = [
-  {
-    id: "full-lsyhook",
-    label: "lsyhook 账号池",
-    username: "lsyhook",
-    password: "",
-    role: "full",
-    enabled: true,
-    source: "remote-seed",
-    deviceId: "",
-    userToken: "",
-    qrcode: "",
-    notes: "远程账号池种子账号"
-  }
-];
+const FALLBACK_LOCAL_CHANGELOG_HEAD = "2026-06-14 15:15 【删除】删除旧版 UI 图片素材、旧默认种子账号和测试播放详情数据，清理不再需要的旧数据。";
 
 const DEFAULT_STATE = {
   role: "guest",
     lastFullTrace: null,
     lastGuestTrace: null,
     notes: [],
-    selectedFullAccountId: "full-lsyhook",
-    accountPool: DEFAULT_ACCOUNTS,
+    selectedFullAccountId: "",
+    accountPool: [],
     fullplayEnabled: true,
     remote: REMOTE_CONFIG,
     fullDetails: [],
@@ -288,7 +272,7 @@ function normalizeAccount(raw = {}) {
     role: "full",
     enabled: raw.enabled !== false,
     source,
-    cloudReadonly: Boolean(raw.cloudReadonly || raw.isCloud || raw.remoteId || raw.cloudId || ["remote", "qrcode", "remote-seed", "seed"].includes(source)),
+    cloudReadonly: Boolean(raw.cloudReadonly || raw.isCloud || raw.remoteId || raw.cloudId || ["remote", "qrcode"].includes(source)),
     remoteId: String(raw.remoteId || raw.cloudId || ""),
     deviceId: String(raw.deviceId || ""),
     userToken: String(raw.userToken || raw.token || ""),
@@ -359,11 +343,11 @@ function isLegacyRemoteBaseUrl(value) {
 function isRemoteAccount(account = {}) {
   const source = String(account.source || "");
   return Boolean(account.cloudReadonly || account.isCloud || account.remoteId || account.cloudId)
-    || source === "remote" || source === "qrcode" || source === "remote-seed";
+    || source === "remote" || source === "qrcode";
 }
 
 function isCloudAccount(account = {}) {
-  return isRemoteAccount(account) || String(account.source || "") === "seed";
+  return isRemoteAccount(account);
 }
 
 function isHealthyAccount(account = {}) {
@@ -374,13 +358,12 @@ function buildAutoCleanState(storedState = {}) {
   const previousRemote = normalizeRemoteConfig(storedState.remote || {});
   const keepManualAccounts = (Array.isArray(storedState.accountPool) ? storedState.accountPool : [])
     .map(normalizeAccount)
-    .filter((account) => !isRemoteAccount(account));
+    .filter((account) => !isRemoteAccount(account) && account.id !== "full-lsyhook" && account.source !== "seed" && account.source !== "remote-seed");
   const accountMap = new Map();
-  for (const account of DEFAULT_ACCOUNTS) accountMap.set(account.id, normalizeAccount(account));
   for (const account of keepManualAccounts) accountMap.set(account.id, account);
   const selectedFullAccountId = accountMap.has(storedState.selectedFullAccountId)
     ? storedState.selectedFullAccountId
-    : DEFAULT_ACCOUNTS[0]?.id || Array.from(accountMap.keys())[0] || "";
+    : Array.from(accountMap.keys())[0] || "";
   return {
     ...DEFAULT_STATE,
     role: storedState.role || DEFAULT_STATE.role,
@@ -491,9 +474,9 @@ async function getStateInternal() {
   state.storageSchemaVersion = STORAGE_SCHEMA_VERSION;
   state.autoCleanedThisLoad = Boolean(autoCleaned);
   const merged = new Map();
-  for (const account of DEFAULT_ACCOUNTS) merged.set(account.id, normalizeAccount(account));
   for (const account of Array.isArray(state.accountPool) ? state.accountPool : []) {
     const normalized = normalizeAccount(account);
+    if (normalized.id === "full-lsyhook" || normalized.source === "seed" || normalized.source === "remote-seed") continue;
     const seeded = merged.get(normalized.id);
     merged.set(normalized.id, { ...(seeded || {}), ...normalized });
   }
@@ -531,7 +514,7 @@ async function resetAllLocalData() {
   await chrome.storage.local.clear();
   const state = {
     ...DEFAULT_STATE,
-    accountPool: DEFAULT_ACCOUNTS.map((item) => ({ ...item })),
+    accountPool: [],
     remote: { ...REMOTE_CONFIG },
     fullDetails: [],
     fullDetailCache: {},
@@ -773,20 +756,6 @@ async function updateAccountSession(accountId, bootstrapSession = null) {
   }
 }
 
-function fixtureFullDetail(movieId) {
-  return {
-    id: String(movieId),
-    has_buy: "y",
-    layer_type: "",
-    money: "0",
-    old_money: "0",
-    balance: "999",
-    play_link: "/vod/demo/full.m3u8",
-    backup_link: "/vod/demo/full-backup.m3u8",
-    title: "txzz fixture full detail"
-  };
-}
-
 function absoluteUrl(link) {
   const value = String(link || "").trim();
   if (!value) return "";
@@ -1023,7 +992,7 @@ async function getFullDetail(message = {}) {
   const remote = normalizeRemoteConfig(state.remote);
   const sourceMode = remote.accountSourceMode || "cloud";
   let remoteError = null;
-  if (sourceMode !== "local" && remote.enabled && remote.baseUrl && !visitorDetail?.__txzzFixture) {
+  if (sourceMode !== "local" && remote.enabled && remote.baseUrl) {
     try {
       const response = normalizeFullDetailResponse(await remoteRequest(state, "/v1/movie/full-detail", {
         method: "POST",
@@ -1061,13 +1030,6 @@ async function getFullDetail(message = {}) {
       state: sanitizeState(state)
     };
   }
-  if (visitorDetail?.__txzzFixture) {
-    const detail = fixtureFullDetail(movieId);
-    const account = { id: "fixture-full", label: "fixture-full", username: "fixture-full" };
-    const session = { deviceId: "fixture-device", userToken: "fixture-token_1001", userInfo: { username: "fixture-full" } };
-    return await finishLocalFullDetail({ state, movieId, detail, account, session, action: "fixture_full_detail", fixtureMode: true, cacheKey });
-  }
-
   const localAccounts = sortAccountsByCoin((state.accountPool || []).filter((item) => !isCloudAccount(item) && isHealthyAccount(item)));
   const selectedLocal = localAccounts.find((item) => item.id === (message.accountId || state.selectedFullAccountId));
   const candidates = selectedLocal ? [selectedLocal, ...localAccounts.filter((item) => item.id !== selectedLocal.id)] : localAccounts;
@@ -1135,16 +1097,11 @@ async function getFullDetail(message = {}) {
 }
 
 async function finishLocalFullDetail(options = {}) {
-  const { state, movieId, detail, account, session, action, fixtureMode = false, cacheKey, errors = [], checkedAccountIds = new Set(), purchaseMeta = {} } = options;
-  const [fullStat, backupStat] = fixtureMode
-    ? [
-        { url: absoluteUrl(detail?.play_link), status: 200, segments: 3, duration: 28.5 },
-        { url: absoluteUrl(detail?.backup_link), status: 200, segments: 3, duration: 28.5 }
-      ]
-    : [
-        detail?.play_link ? { url: absoluteUrl(detail.play_link), pending: true } : null,
-        detail?.backup_link ? { url: absoluteUrl(detail.backup_link), pending: true } : null
-      ];
+  const { state, movieId, detail, account, session, action, cacheKey, errors = [], checkedAccountIds = new Set(), purchaseMeta = {} } = options;
+  const [fullStat, backupStat] = [
+    detail?.play_link ? { url: absoluteUrl(detail.play_link), pending: true } : null,
+    detail?.backup_link ? { url: absoluteUrl(detail.backup_link), pending: true } : null
+  ];
   const summary = {
     movieId,
     action,
@@ -1184,7 +1141,7 @@ async function finishLocalFullDetail(options = {}) {
   const cacheEntries = Object.entries(fresh.fullDetailCache);
   if (cacheEntries.length > 120) fresh.fullDetailCache = Object.fromEntries(cacheEntries.slice(-120));
   await saveState(fresh);
-  if (!fixtureMode && (detail?.play_link || detail?.backup_link)) {
+  if (detail?.play_link || detail?.backup_link) {
     Promise.all([statM3u8Quick(detail?.play_link), statM3u8Quick(detail?.backup_link)])
       .then(async ([resolvedFullStat, resolvedBackupStat]) => {
         const latest = await getStateInternal();
@@ -1827,7 +1784,7 @@ async function selectAccount(accountId) {
 
 async function removeAccount(accountId) {
   const state = await getStateInternal();
-  state.accountPool = state.accountPool.filter((item) => item.id !== accountId || item.source === "seed");
+  state.accountPool = state.accountPool.filter((item) => item.id !== accountId);
   if (!state.accountPool.some((item) => item.id === state.selectedFullAccountId)) {
     state.selectedFullAccountId = state.accountPool[0]?.id || "";
   }
@@ -1893,8 +1850,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       sendResponse({ ok: true, state: sanitizeState(state) });
       return;
     }
-    if (message?.type === "clearState") {
-      const state = await saveState({ ...DEFAULT_STATE, accountPool: DEFAULT_ACCOUNTS });
+  if (message?.type === "clearState") {
+      const state = await saveState({ ...DEFAULT_STATE, accountPool: [] });
       sendResponse({ ok: true, state: sanitizeState(state) });
       return;
     }

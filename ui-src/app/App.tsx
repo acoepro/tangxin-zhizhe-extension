@@ -36,7 +36,7 @@ function flowMessage(state: BridgeState, index: number) {
   }
   const fallback = [
     "正在同步云端账号池…",
-    "当前使用账号：糖糖一号",
+    "等待真实账号池数据",
     "获取播放详情完成",
     "金币视频已解锁"
   ];

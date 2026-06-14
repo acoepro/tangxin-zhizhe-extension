@@ -135,7 +135,7 @@ export function accountName(account?: AccountItem | null) {
 export function isCloudAccount(account?: AccountItem | null) {
   const source = String(account?.source || "").toLowerCase();
   return Boolean(account?.cloud || account?.cloudReadonly || account?.isCloud || account?.remoteId || account?.cloudId)
-    || ["cloud", "remote", "qrcode", "remote-seed", "seed"].includes(source);
+    || ["cloud", "remote", "qrcode"].includes(source);
 }
 
 export function accountAvailable(account?: AccountItem | null) {
