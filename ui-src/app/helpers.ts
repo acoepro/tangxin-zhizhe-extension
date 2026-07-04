@@ -7,13 +7,11 @@ export function formatTime(value?: string) {
   return date.toLocaleString("zh-CN", { hour12: false });
 }
 
-/** 返回相对时间描述，如"3分钟前"、"刚刚"，超过1天显示完整日期 */
 export function formatRelativeTime(value?: string) {
   if (!value) return "未记录";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return String(value);
-  const diffMs = Date.now() - date.getTime();
-  const diffSec = Math.floor(diffMs / 1000);
+  const diffSec = Math.floor((Date.now() - date.getTime()) / 1000);
   if (diffSec < 10) return "刚刚";
   if (diffSec < 60) return `${diffSec}秒前`;
   const diffMin = Math.floor(diffSec / 60);
@@ -23,16 +21,15 @@ export function formatRelativeTime(value?: string) {
   return date.toLocaleDateString("zh-CN");
 }
 
-/** 截断长 URL，只保留域名和末尾路径，用于安全展示 */
 export function maskUrl(url?: string) {
   if (!url) return "";
   try {
     const parsed = new URL(url);
     const path = parsed.pathname;
-    const shortPath = path.length > 20 ? `…${path.slice(-16)}` : path;
+    const shortPath = path.length > 20 ? `...${path.slice(-16)}` : path;
     return `${parsed.hostname}${shortPath}`;
   } catch {
-    return url.length > 36 ? `${url.slice(0, 36)}…` : url;
+    return url.length > 36 ? `${url.slice(0, 36)}...` : url;
   }
 }
 
@@ -88,10 +85,7 @@ export function formatBytes(bytes?: number) {
   const units = ["B", "KB", "MB", "GB"];
   let size = value;
   let index = 0;
-  while (size >= 1024 && index < units.length - 1) {
-    size /= 1024;
-    index += 1;
-  }
+  while (size >= 1024 && index < units.length - 1) { size /= 1024; index += 1; }
   return `${size.toFixed(index === 0 ? 0 : 1)} ${units[index]}`;
 }
 
@@ -104,9 +98,9 @@ export function downloadTasks(state: BridgeState) {
 export function downloadStats(tasks: DownloadTask[]) {
   return {
     total: tasks.length,
-    running: tasks.filter((task) => ["queued", "playlist", "segments", "segment", "save-dialog", "ready"].includes(String(task.stage || ""))).length,
-    completed: tasks.filter((task) => task.stage === "complete").length,
-    failed: tasks.filter((task) => task.stage === "error").length
+    running: tasks.filter((t) => ["queued","playlist","segments","segment","save-dialog","ready"].includes(String(t.stage||""))).length,
+    completed: tasks.filter((t) => t.stage === "complete").length,
+    failed: tasks.filter((t) => t.stage === "error").length
   };
 }
 
@@ -151,14 +145,8 @@ export function latestFullDetail(state: BridgeState): FullDetail | undefined {
 
 export function accountName(account?: AccountItem | null) {
   if (!account) return "账号池账号";
-  return account.userInfo?.nickname ||
-    account.userInfo?.account_name ||
-    account.userInfo?.name ||
-    account.nickname ||
-    account.label ||
-    account.username ||
-    account.id ||
-    "账号池账号";
+  return account.userInfo?.nickname || account.userInfo?.account_name || account.userInfo?.name
+    || account.nickname || account.label || account.username || account.id || "账号池账号";
 }
 
 export function isCloudAccount(account?: AccountItem | null) {
@@ -182,23 +170,23 @@ export function accountStatusLabel(account?: AccountItem | null) {
 
 export function selectedAccount(state: BridgeState) {
   const selectedId = state.selectedFullAccountId;
-  return (state.accountPool || []).find((account) => account.id && account.id === selectedId) || null;
+  return (state.accountPool || []).find((a) => a.id && a.id === selectedId) || null;
 }
 
 export function visibleAccounts(state: BridgeState, showInvalid: boolean) {
   const accounts = state.accountPool || [];
-  return accounts.filter((account) => showInvalid || accountAvailable(account));
+  return accounts.filter((a) => showInvalid || accountAvailable(a));
 }
 
 export function accountStats(state: BridgeState) {
   const accounts = state.accountPool || [];
   const cloud = accounts.filter(isCloudAccount);
-  const local = accounts.filter((account) => !isCloudAccount(account));
+  const local = accounts.filter((a) => !isCloudAccount(a));
   return {
     total: accounts.length,
     cloudAvailable: cloud.filter(accountAvailable).length,
     local: local.length,
-    invalid: cloud.filter((account) => !accountAvailable(account)).length
+    invalid: cloud.filter((a) => !accountAvailable(a)).length
   };
 }
 

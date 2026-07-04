@@ -10,7 +10,7 @@ export default defineConfig({
   },
   build: {
     outDir: "dist-ui",
-    emptyOutDir: true,
+    emptyOutDir: false,
     cssCodeSplit: false,
     lib: {
       entry: resolve(__dirname, "ui-src/main.tsx"),
