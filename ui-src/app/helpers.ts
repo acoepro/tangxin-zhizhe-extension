@@ -7,6 +7,35 @@ export function formatTime(value?: string) {
   return date.toLocaleString("zh-CN", { hour12: false });
 }
 
+/** 返回相对时间描述，如"3分钟前"、"刚刚"，超过1天显示完整日期 */
+export function formatRelativeTime(value?: string) {
+  if (!value) return "未记录";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
+  const diffMs = Date.now() - date.getTime();
+  const diffSec = Math.floor(diffMs / 1000);
+  if (diffSec < 10) return "刚刚";
+  if (diffSec < 60) return `${diffSec}秒前`;
+  const diffMin = Math.floor(diffSec / 60);
+  if (diffMin < 60) return `${diffMin}分钟前`;
+  const diffHour = Math.floor(diffMin / 60);
+  if (diffHour < 24) return `${diffHour}小时前`;
+  return date.toLocaleDateString("zh-CN");
+}
+
+/** 截断长 URL，只保留域名和末尾路径，用于安全展示 */
+export function maskUrl(url?: string) {
+  if (!url) return "";
+  try {
+    const parsed = new URL(url);
+    const path = parsed.pathname;
+    const shortPath = path.length > 20 ? `…${path.slice(-16)}` : path;
+    return `${parsed.hostname}${shortPath}`;
+  } catch {
+    return url.length > 36 ? `${url.slice(0, 36)}…` : url;
+  }
+}
+
 export function shortTime(value?: string) {
   if (!value) return "--:--";
   const date = new Date(value);
